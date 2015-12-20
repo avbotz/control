@@ -18,6 +18,8 @@ FILE config_out_file = FDEV_SETUP_STREAM(put_config, NULL, _FDEV_SETUP_WRITE);
 FILE motor_in_file = FDEV_SETUP_STREAM(NULL, get_motor, _FDEV_SETUP_READ);
 FILE motor_out_file = FDEV_SETUP_STREAM(put_motor, NULL, _FDEV_SETUP_WRITE);
 
+#include "Arduino.h"
+
 FILE* cpu_in(char* file)
 {
 	if (!Serial) Serial.begin(9600);
@@ -61,8 +63,6 @@ FILE* config_out(char* file)
 {
 	return &config_out_file;
 }
-
-#include "arduino.h"
 
 int put_cpu(char c, FILE* f)
 {
@@ -124,7 +124,7 @@ int get_sensor(FILE* f)
 
 	// read next byte
 	char c = sensor_buffer[sensor_index++];
-	if (c == NULL)
+	if (c == 0)
 	{
 		sensor_buffer[sensor_index = 0] = 0;
 		return _FDEV_EOF;
@@ -145,6 +145,8 @@ int get_motor(FILE* f)
 {
 	return 0;
 }
+
+#include "EEPROM.h"
 
 #define EEPROM_SIZE 4096
 
