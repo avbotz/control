@@ -9,6 +9,7 @@ int get_motor(FILE*);
 int put_config(char, FILE*);
 int get_config(FILE*);
 
+/*
 FILE cpu_in_file = FDEV_SETUP_STREAM(NULL, get_cpu, _FDEV_SETUP_READ);
 FILE cpu_out_file = FDEV_SETUP_STREAM(put_cpu, NULL, _FDEV_SETUP_WRITE);
 FILE sensor_in_file = FDEV_SETUP_STREAM(NULL, get_sensor, _FDEV_SETUP_READ);
@@ -17,51 +18,60 @@ FILE config_in_file = FDEV_SETUP_STREAM(NULL, get_config, _FDEV_SETUP_READ);
 FILE config_out_file = FDEV_SETUP_STREAM(put_config, NULL, _FDEV_SETUP_WRITE);
 FILE motor_in_file = FDEV_SETUP_STREAM(NULL, get_motor, _FDEV_SETUP_READ);
 FILE motor_out_file = FDEV_SETUP_STREAM(put_motor, NULL, _FDEV_SETUP_WRITE);
+*/
 
 #include "Arduino.h"
 
 FILE* cpu_in(char* file)
 {
 	if (!Serial) Serial.begin(9600);
-	return &cpu_in_file;
+//	return &cpu_in_file;
+	return fdevopen(NULL, get_cpu);
 }
 
 FILE* cpu_out(char* file)
 {
 	if (!Serial) Serial.begin(9600);
-	return &cpu_out_file;
+//	return &cpu_out_file;
+	return fdevopen(put_cpu, NULL);
 }
 
 FILE* sensor_in(char* file)
 {
 	if (!Serial3) Serial3.begin(38400);
-	return &sensor_in_file;
+//	return &sensor_in_file;
+	return fdevopen(NULL, get_sensor);
 }
 
 FILE* sensor_out(char* file)
 {
 	if (!Serial3) Serial3.begin(38400);
-	return &sensor_out_file;
+//	return &sensor_out_file;
+	return fdevopen(put_sensor, NULL);
 }
 
 FILE* motor_in(char* file)
 {
-	return &motor_in_file;
+//	return &motor_in_file;
+	return fdevopen(NULL, get_cpu);
 }
 
 FILE* motor_out(char* file)
 {
-	return &motor_out_file;
+//	return &motor_out_file;
+	return fdevopen(put_sensor, NULL);
 }
 
 FILE* config_in(char* file)
 {
-	return &config_in_file;
+//	return &config_in_file;
+	return fdevopen(NULL, get_cpu);
 }
 
 FILE* config_out(char* file)
 {
-	return &config_out_file;
+//	return &config_out_file;
+	return fdevopen(put_sensor, NULL);
 }
 
 int put_cpu(char c, FILE* f)
@@ -98,6 +108,15 @@ char ahrs_buffer[256];
 int ahrs_index = 0;
 char sensor_buffer[256];
 int sensor_index = 0;
+
+bool complete(char* buffer, size_t index)
+{
+	return true;
+}
+
+void ahrs_read(char* buffer, float* yaw, float* pitch, float* roll)
+{
+}
 
 int get_sensor(FILE* f)
 {

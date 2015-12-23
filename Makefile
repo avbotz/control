@@ -3,8 +3,9 @@ ARDLIB_SOURCEDIR = $(ARDLIB_DIR)/src
 ARDLIB_BUILDDIR = $(ARDLIB_DIR)/build
 ARDLIB_INCLUDEDIR = $(ARDLIB_DIR)/include
 
-ARDLIB_SOURCES = $(wildcard $(ARDLIB_SOURCEDIR)/*.cpp)
-ARDLIB_OBJECTS = $(patsubst $(ARDLIB_SOURCEDIR)/%.cpp,$(ARDLIB_BUILDDIR)/%.o,$(ARDLIB_SOURCES))
+ARDLIB_SOURCE_FILES = EEPROM.cpp HardwareSerial.cpp Print.cpp WString.cpp wiring_analog.c wiring_digital.c new.cpp wiring.c
+ARDLIB_SOURCES = $(patsubst %,$(ARDLIB_SOURCEDIR)/%,$(ARDLIB_SOURCE_FILES))
+ARDLIB_OBJECTS = $(patsubst $(ARDLIB_SOURCEDIR)/%,$(ARDLIB_BUILDDIR)/%.o,$(ARDLIB_SOURCES))
 
 SOURCEDIR = src
 BUILDDIR = build
@@ -13,40 +14,43 @@ EXE = control
 CC = g++
 CFLAGS  = -ggdb -c -std=c++11
 LDFLAGS =
-SOURCE_FILES = control main pid io_cpu
-SOURCES = $(patsubst %,$(SOURCEDIR)/%.cpp,$(SOURCE_FILES))
-OBJECTS = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%.o,$(SOURCES))
+SOURCE_FILES = control.cpp main.cpp pid.cpp io_cpu.cpp
+SOURCES = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES))
+OBJECTS = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%.o,$(SOURCES))
 
 EXE_ARD = control.bin
-CC_ARD = avr-g++ -mmcu=atmega2560
-CFLAGS_ARD  = -ggdb -c -std=c++11 -I$(ARDLIB_INCLUDEDIR)
-LDFLAGS_ARD =
-SOURCE_FILES_ARD = control main pid io_arduino
-SOURCES_ARD = $(patsubst %,$(SOURCEDIR)/%.cpp,$(SOURCE_FILES_ARD))
-OBJECTS_ARD = $(patsubst $(SOURCEDIR)/%.cpp,$(BUILDDIR)/%_ard.o,$(SOURCES_ARD))
+CC_ARD = avr-g++ -mmcu=avr6
+CFLAGS_ARD  = -ggdb -c -std=c++11 -I$(ARDLIB_INCLUDEDIR) -DF_CPU=16000000 -D__COMPILING_AVR_LIBC__ -D__AVR_ATmega2560__ -DUBRR0H -DUBRR1H -DUBRR2H -DUBRR3H
+LDFLAGS_ARD = -Wl,--defsym=__heap_end=0
+SOURCE_FILES_ARD = control.cpp main.cpp pid.cpp io_arduino.cpp
+SOURCES_ARD = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES_ARD))
+OBJECTS_ARD = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%_ard.o,$(SOURCES_ARD))
 
 all: arduino
 
-arduino: dir control.bin
+arduino: $(BUILDDIR) $(ARDLIB_BUILDDIR) control.bin
 
-cpu: dir control
+cpu: $(BUILDDIR) control
 
-dir:
+$(BUILDDIR):
 	mkdir -p $(BUILDDIR)
+
+$(ARDLIB_BUILDDIR):
+	mkdir -p $(ARDLIB_BUILDDIR)
 
 $(EXE): $(OBJECTS)
 	$(CC) $^ $(LDFLAGS) -o $@
 
-$(BUILDDIR)/%.o: $(SOURCEDIR)/%.cpp
+$(BUILDDIR)/%.o: $(SOURCEDIR)/%
 	$(CC) $(CFLAGS) $< -o $@
 
-$(EXE_ARD): $(OBJECTS_ARD)
+$(EXE_ARD): $(ARDLIB_OBJECTS) $(OBJECTS_ARD)
 	$(CC_ARD) $^ $(LDFLAGS_ARD) -o $@
 
-$(BUILDDIR)/%_ard.o: $(SOURCEDIR)/%.cpp
+$(BUILDDIR)/%_ard.o: $(SOURCEDIR)/%
 	$(CC_ARD) $(CFLAGS_ARD) $< -o $@
 
-$(ARDLIB_BUILDDIR)/%.o: $(ARDLIB_SOURCEDIR)/%.cpp
+$(ARDLIB_BUILDDIR)/%.o: $(ARDLIB_SOURCEDIR)/%
 	$(CC_ARD) $(CFLAGS_ARD) $< -o $@
 
 .PHONY: clean
