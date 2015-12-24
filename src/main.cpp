@@ -10,6 +10,11 @@ int main(int argc, char** argv)
 			motor_in(argv[5]), motor_out(argv[6]),
 			config_in(argv[7]), config_out(argv[8])
 		);
-	else return control(NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+	else return control(
+			cpu_in(NULL), cpu_out(NULL),
+			sensor_in(NULL), sensor_out(NULL),
+			motor_in(NULL), motor_out(NULL),
+			config_in(NULL), config_out(NULL)
+		);
 }
 
