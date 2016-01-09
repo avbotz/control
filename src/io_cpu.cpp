@@ -14,25 +14,25 @@ FILE* cpu_out(char* file)
 
 FILE* sensor_in(char* file)
 {
-	if (file == NULL) return fopen("sensor_in", "r");
+	if (file == NULL) return fopen("./sim/sensor_in", "r");
 	else return fopen(file, "r");
 }
 
 FILE* sensor_out(char* file)
 {
-	if (file == NULL) return fopen("sensor_out", "w");
+	if (file == NULL) return fopen("./sim/sensor_out", "w");
 	else return fopen(file, "r");
 }
 
 FILE* motor_in(char* file)
 {
-	if (file == NULL) return fopen("motor_in", "r");
+	if (file == NULL) return fopen("./sim/motor_in", "r");
 	else return fopen(file, "r");
 }
 
 FILE* motor_out(char* file)
 {
-	if (file == NULL) return fopen("motor_out", "w");
+	if (file == NULL) return fopen("./sim/motor_out", "w");
 	else return fopen(file, "r");
 }
 
