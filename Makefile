@@ -60,6 +60,6 @@ clean:
 	rm -f $(EXE)
 	rm -f $(ARDLIB_BUILDDIR)/*.o
 	rm -f $(EXE_ARD)
-	rmdir $(BUILDDIR)
-	rmdir $(ARDLIB_BUILDDIR)
+	rm -f -d $(BUILDDIR)
+	rm -f -d $(ARDLIB_BUILDDIR)
 

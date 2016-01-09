@@ -21,7 +21,7 @@ FILE* sensor_in(char* file)
 FILE* sensor_out(char* file)
 {
 	if (file == NULL) return fopen("./sim/sensor_out", "w");
-	else return fopen(file, "r");
+	else return fopen(file, "w");
 }
 
 FILE* motor_in(char* file)
@@ -33,7 +33,7 @@ FILE* motor_in(char* file)
 FILE* motor_out(char* file)
 {
 	if (file == NULL) return fopen("./sim/motor_out", "w");
-	else return fopen(file, "r");
+	else return fopen(file, "w");
 }
 
 FILE* config_in(char* file)
@@ -45,6 +45,6 @@ FILE* config_in(char* file)
 FILE* config_out(char* file)
 {
 	if (file == NULL) return fopen("config_out", "w");
-	else return fopen(file, "r");
+	else return fopen(file, "w");
 }
 
