@@ -3,6 +3,8 @@
 #include <string.h>
 #include <vector>
 
+FILE* sensor_in, *sensor_out, *motor_in, *motor_out;
+
 /*
  * Update position, anglular orientation, velocity, and angular velocity of object
  * Accepts current state of variables above, plus forces acting on object, mass of object, inertia tensor, and time difference from last update
@@ -55,8 +57,9 @@ void output()
 {
 	// find pitch roll yaw from rotation matrix
 	arma::vec ypr = {atan2(angle.at(1,0), angle.at(0,0)), atan2(-angle.at(2,0),sqrt(angle.at(1,0)*angle.at(1,0)+angle.at(0,0)*angle.at(0,0))), atan2(angle.at(2,1), angle.at(2,2))};
-	std::cout<<ypr<<"\n"<<posit[2]<<"\n";
-	
+	fprintf(sensor_in, "%f %f %f %f ", ypr[0], ypr[1], ypr[2], posit[2]);
+	//fprintf(log, "%f %f %f %f ", ypr[0], ypr[1], ypr[2], posit[2]);
+	std::cout << ypr << "\n";
 	/*
 	std::cout<<"Pos\n"<<posit<<"\n\n";
 	std::cout<<"Ang\n"<<ypr<<"\n"<<angle<<"\n\n";
@@ -65,6 +68,7 @@ void output()
 	*/
 	
 }
+
 int main()
 {
 	// initializes motor position and directions
@@ -89,14 +93,22 @@ int main()
 	motorDir[6] = {1, 0, 0};
 	motorDir[7] = {1, 0, 0};
 	motorDir[8] = {0, 1, 0};
+
+	sensor_in = fopen("sensor_in", "w");
+	sensor_out = fopen("sensor_out", "r");
+	motor_in = fopen("motor_in", "w");
+	motor_out = fopen("motor_out", "r");
+	FILE *log = fopen("log", "w");
+	
 	output();
+
 	while(true)
 	{
 		// get forces/positions based on motor powers
 		std::vector<std::pair<arma::vec, arma::vec> > fList;
 		for (int i = 0; i < 9; i++)
 		{
-			std::cin >> motorPower[i];
+			fscanf(motor_out, "%i", &motorPower[i]);
 			// TODO: simulate counter spinning from the spin of motors
 			fList.push_back(std::pair<arma::vec, arma::vec>((motorPower[i])*angle*motorDir[i], angle*motorPos[i]));
 		}
@@ -105,7 +117,6 @@ int main()
 		fList.push_back(std::pair<arma::vec, arma::vec>(axisK*subVol*fluidDen*gravity, angle*centOfVol));
 		fList.push_back(std::pair<arma::vec, arma::vec>(-(axisK*subMass*gravity), zeroV));
 		int time = 10;
-		std::cin >> time;
 
 		// break up steps into smaller time differences to make linear acceleration while rotating more accurate
 		int tDiff = 1;

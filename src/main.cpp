@@ -10,11 +10,15 @@ int main(int argc, char** argv)
 			motor_in(argv[5]), motor_out(argv[6]),
 			config_in(argv[7]), config_out(argv[8])
 		);
-	else return control(
+	else
+	{
+		FILE	*sin = sensor_in(NULL), *sout = sensor_out(NULL),
+			*min = motor_in(NULL),  *mout = motor_out(NULL);
+		return control(
 			cpu_in(NULL), cpu_out(NULL),
-			sensor_in(NULL), sensor_out(NULL),
-			motor_in(NULL), motor_out(NULL),
+			sin, sout, min, mout,
 			config_in(NULL), config_out(NULL)
 		);
+	}
 }
 
