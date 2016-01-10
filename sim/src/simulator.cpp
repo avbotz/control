@@ -57,9 +57,13 @@ void output()
 {
 	// find pitch roll yaw from rotation matrix
 	arma::vec ypr = {atan2(angle.at(1,0), angle.at(0,0)), atan2(-angle.at(2,0),sqrt(angle.at(1,0)*angle.at(1,0)+angle.at(0,0)*angle.at(0,0))), atan2(angle.at(2,1), angle.at(2,2))};
-	fprintf(sensor_in, "%f %f %f %f ", ypr[0], ypr[1], ypr[2], posit[2]);
+	fprintf(sensor_in, "%f ", ypr[0]); 
+	fprintf(sensor_in, "%f ", ypr[1]); 
+	fprintf(sensor_in, "%f ", ypr[2]); 
+	fprintf(sensor_in, "%f ", posit[2]); 
+	if( ferror(sensor_in) ){std::cout << "ERROR";}
 	//fprintf(log, "%f %f %f %f ", ypr[0], ypr[1], ypr[2], posit[2]);
-	std::cout << ypr << "\n";
+	std::cout << ypr[0] << " " << ypr[1] << " " << ypr[2] << " " << posit[2] << "\n";
 	/*
 	std::cout<<"Pos\n"<<posit<<"\n\n";
 	std::cout<<"Ang\n"<<ypr<<"\n"<<angle<<"\n\n";
@@ -98,7 +102,7 @@ int main()
 	sensor_out = fopen("sensor_out", "r");
 	motor_in = fopen("motor_in", "w");
 	motor_out = fopen("motor_out", "r");
-	FILE *log = fopen("log", "w");
+	//FILE *log = fopen("log", "w");
 	
 	output();
 
@@ -108,7 +112,7 @@ int main()
 		std::vector<std::pair<arma::vec, arma::vec> > fList;
 		for (int i = 0; i < 9; i++)
 		{
-			fscanf(motor_out, "%i", &motorPower[i]);
+			fscanf(motor_out, " %i", &motorPower[i]);
 			// TODO: simulate counter spinning from the spin of motors
 			fList.push_back(std::pair<arma::vec, arma::vec>((motorPower[i])*angle*motorDir[i], angle*motorPos[i]));
 		}
