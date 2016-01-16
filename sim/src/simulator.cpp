@@ -61,7 +61,8 @@ void output()
 	fprintf(sensor_in, "%f ", ypr[1]); 
 	fprintf(sensor_in, "%f ", ypr[2]); 
 	fprintf(sensor_in, "%f ", posit[2]); 
-	if( ferror(sensor_in) ){std::cout << "ERROR";}
+	fflush(sensor_in);
+	
 	//fprintf(log, "%f %f %f %f ", ypr[0], ypr[1], ypr[2], posit[2]);
 	std::cout << ypr[0] << " " << ypr[1] << " " << ypr[2] << " " << posit[2] << "\n";
 	/*
@@ -103,7 +104,6 @@ int main()
 	motor_in = fopen("motor_in", "w");
 	motor_out = fopen("motor_out", "r");
 	//FILE *log = fopen("log", "w");
-	
 	output();
 
 	while(true)
@@ -113,9 +113,11 @@ int main()
 		for (int i = 0; i < 9; i++)
 		{
 			fscanf(motor_out, " %i", &motorPower[i]);
+			std::cout << motorPower[i] << " ";
 			// TODO: simulate counter spinning from the spin of motors
 			fList.push_back(std::pair<arma::vec, arma::vec>((motorPower[i])*angle*motorDir[i], angle*motorPos[i]));
 		}
+		std::cout << std::endl;
 		// add force of gravity/buoyancy
 		// TODO: simulate lift & other fluid forces
 		fList.push_back(std::pair<arma::vec, arma::vec>(axisK*subVol*fluidDen*gravity, angle*centOfVol));

@@ -24,7 +24,7 @@ int control(FILE* cpu_in, FILE* cpu_out, FILE* sensor_in, FILE* sensor_out, FILE
 			fscanf(config_in, " %f", &thrusterMatrix[i*numControllers + j]);
 
 	// the desired state
-	float desired[numControllers] = {0};
+	float desired[numControllers] = {1.6};
 
 	while (1)
 	{
@@ -34,7 +34,6 @@ int control(FILE* cpu_in, FILE* cpu_out, FILE* sensor_in, FILE* sensor_out, FILE
 		{
 			float value;
 			fscanf(sensor_in, " %f", &value);
-			fprintf(cpu_out, "%i ", value);
 			pidValues[i] = process(&controllers[i], value - desired[i]);
 		}
 
@@ -45,6 +44,7 @@ int control(FILE* cpu_in, FILE* cpu_out, FILE* sensor_in, FILE* sensor_out, FILE
 			for (uint8_t j = 0; j < numControllers; j++)
 				thrust += pidValues[j] * thrusterMatrix[i*numControllers + j];
 			fprintf(motor_out, "%i ", thrust);
+			fflush(motor_out);
 		}
 	}
 
