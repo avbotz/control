@@ -22,7 +22,7 @@ EXE_ARD = control.bin
 CC_ARD = avr-g++
 CFLAGS_ARD  = -c -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics -MMD -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR -I$(ARDLIB_INCLUDEDIR)
 SFLAGS_ARD = -c -g -x assembler-with-cpp -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR
-LDFLAGS_ARD = -Wl,--defsym=__heap_end=0
+LDFLAGS_ARD = -w -Os -Wl,--gc-sections,--relax -mmcu=atmega2560
 SOURCE_FILES_ARD = control.cpp main.cpp pid.cpp io_arduino.cpp
 SOURCES_ARD = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES_ARD))
 OBJECTS_ARD = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%_ard.o,$(SOURCES_ARD))
@@ -46,8 +46,7 @@ $(BUILDDIR)/%.o: $(SOURCEDIR)/%
 	$(CC) $(CFLAGS) $< -o $@
 
 $(EXE_ARD): $(ARDLIB_OBJECTS) $(OBJECTS_ARD)
-	$(CC_ARD) -mmcu=avr6 -latmega2560 && $(CC_ARD) $^ $(LDFLAGS_ARD) -latmega2560 -o $@ || /bin/true
-	$(CC_ARD) -mmcu=avr6 -latmega2560 || $(CC_ARD) $^ $(LDFLAGS_ARD) -o $@
+	avr-gcc $(LDFLAGS_ARD) $^ -o $@
 
 $(BUILDDIR)/%_ard.o: $(SOURCEDIR)/%
 	$(CC_ARD) $(CFLAGS_ARD) $< -o $@
