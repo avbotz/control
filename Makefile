@@ -41,6 +41,8 @@ $(ARDLIB_BUILDDIR):
 
 $(EXE): $(OBJECTS)
 	$(CC) $^ $(LDFLAGS) -o $@
+	$(CC_ARD) -mmcu=avr6 -latmega2560 && $(CC_ARD) $^ $(LDFLAGS_ARD) -latmega2560 -o $@ || /bin/true
+	$(CC_ARD) -mmcu=avr6 -latmega2560 || $(CC_ARD) $^ $(LDFLAGS_ARD) -o $@
 
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%
 	$(CC) $(CFLAGS) $< -o $@
@@ -59,6 +61,11 @@ $(ARDLIB_BUILDDIR)/%.c.o: $(ARDLIB_SOURCEDIR)/%.c
 
 $(ARDLIB_BUILDDIR)/%.S.o: $(ARDLIB_SOURCEDIR)/%.S
 	avr-gcc $(SFLAGS_ARD) $< -o $@
+
+flash: control.bin
+	avr-objcopy -O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0 $< $<.eep
+	avr-objcopy -O ihex -R .eeprom $< $<.hex
+	avrdude -Carduino/avrdude.conf -v -patmega2560 -cwiring -P/dev/ttyUSB0 -b115200 -D -Uflash:w:$<.hex:i
 
 .PHONY: clean
 
