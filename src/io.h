@@ -12,5 +12,7 @@ FILE* motor_out(char*);
 FILE* config_in(char*);
 FILE* config_out(char*);
 
+void init_io();
+
 #endif
 

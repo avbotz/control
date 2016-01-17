@@ -186,3 +186,10 @@ int get_config(FILE* f)
 	else return EEPROM.read(eeprom_read_index++);
 }
 
+// attempt to copy initialization performed by the Arduino main.cpp
+void init_io()
+{
+#if defined(USBCON)
+	USBDevice.attach();
+#endif
+}

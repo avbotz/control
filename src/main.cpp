@@ -3,6 +3,8 @@
 
 int main(int argc, char** argv)
 {
+	init_io();
+
 	if (argc >= 9)
 		return control(
 			cpu_in(argv[1]), cpu_out(argv[2]),
