@@ -48,3 +48,7 @@ FILE* config_out(char* file)
 	else return fopen(file, "w");
 }
 
+void init_io()
+{
+	// only does stuff on arduino
+}
