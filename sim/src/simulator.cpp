@@ -77,16 +77,15 @@ void output()
 int main()
 {
 	// initializes motor position and directions
-	// order is VERT_FL, VERT_FR, VERT_BR, VERT_BL, DIAG_L, DIAG_R, SRGE_L, SRGE_R, STRAFE
+	// order is VERT_FL, VERT_FR, VERT_BL, VERT_BR, DIAG_L, DIAG_R, SRGE_L, SRGE_R, STRAFE
 	motorPos[0] = {1, -1, 0};
 	motorPos[1] = {1, 1, 0};
-	motorPos[2] = {-1, 1, 0};
-	motorPos[3] = {-1, -1, 0};
+	motorPos[2] = {-1, -1, 0};
+	motorPos[3] = {-1, 1, 0};
 	motorPos[4] = {0.5, -1, 0};
 	motorPos[5] = {0.5, 1, 0};
 	motorPos[6] = {0, -1, 0};
 	motorPos[7] = {0, 1, 0};
-	motorPos[8] = {-1, 0, 0};
 
 	// vector with direction of motor and magnitude of motor force
 	motorDir[0] = {0, 0, 1};

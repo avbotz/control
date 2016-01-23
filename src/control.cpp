@@ -5,7 +5,7 @@
 int control(FILE* cpu_in, FILE* cpu_out, FILE* sensor_in, FILE* sensor_out, FILE* motor_in, FILE* motor_out, FILE* config_in, FILE* config_out)
 {
 	const int numControllers = 4;
-	const int numMotors = 9;
+	const int numMotors = 8;
 
 	// read PID filter gains from configuration
 	float gains[numControllers * 3]; // yp, yi, yd, pp, pi, ...
@@ -24,8 +24,12 @@ int control(FILE* cpu_in, FILE* cpu_out, FILE* sensor_in, FILE* sensor_out, FILE
 			fscanf(config_in, " %f", &thrusterMatrix[i*numControllers + j]);
 
 	// the desired state
-	float desired[numControllers] = {1.6};
-
+	float desired[numControllers] = {0};
+	
+	// get them from config for now
+	for (uint8_t i = 0; i < numControllers; i++)
+		fscanf(config_in, " %f", &desired[i]);
+	
 	while (1)
 	{
 		// read current variable values and send them to PID
@@ -43,7 +47,7 @@ int control(FILE* cpu_in, FILE* cpu_out, FILE* sensor_in, FILE* sensor_out, FILE
 			float thrust = 0;
 			for (uint8_t j = 0; j < numControllers; j++)
 				thrust += pidValues[j] * thrusterMatrix[i*numControllers + j];
-			fprintf(motor_out, "%i ", thrust);
+			fprintf(motor_out, "%i ", (int) thrust);
 			fflush(motor_out);
 		}
 	}
