@@ -41,8 +41,6 @@ $(ARDLIB_BUILDDIR):
 
 $(EXE): $(OBJECTS)
 	$(CC) $^ $(LDFLAGS) -o $@
-	$(CC_ARD) -mmcu=avr6 -latmega2560 && $(CC_ARD) $^ $(LDFLAGS_ARD) -latmega2560 -o $@ || /bin/true
-	$(CC_ARD) -mmcu=avr6 -latmega2560 || $(CC_ARD) $^ $(LDFLAGS_ARD) -o $@
 
 $(BUILDDIR)/%.o: $(SOURCEDIR)/%
 	$(CC) $(CFLAGS) $< -o $@

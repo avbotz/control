@@ -82,21 +82,20 @@ int main()
 	motorPos[1] = {1, 1, 0};
 	motorPos[2] = {-1, -1, 0};
 	motorPos[3] = {-1, 1, 0};
-	motorPos[4] = {0.5, -1, 0};
-	motorPos[5] = {0.5, 1, 0};
-	motorPos[6] = {0, -1, 0};
-	motorPos[7] = {0, 1, 0};
+	motorPos[4] = {1, -1, 0};
+	motorPos[5] = {1, 1, 0};
+	motorPos[6] = {-1, -1, 0};
+	motorPos[7] = {-1, 1, 0};
 
 	// vector with direction of motor and magnitude of motor force
 	motorDir[0] = {0, 0, 1};
 	motorDir[1] = {0, 0, 1};
 	motorDir[2] = {0, 0, 1};
 	motorDir[3] = {0, 0, 1};
-	motorDir[4] = {0.866, 0.5, 0};
-	motorDir[5] = {0.866, -0.5, 0};
-	motorDir[6] = {1, 0, 0};
-	motorDir[7] = {1, 0, 0};
-	motorDir[8] = {0, 1, 0};
+	motorDir[4] = {0.966, 0.259, 0};
+	motorDir[5] = {0.966, -0.259, 0};
+	motorDir[6] = {0.966, -0.259, 0};
+	motorDir[7] = {0.966, 0.259, 0};
 
 	sensor_in = fopen("sensor_in", "w");
 	sensor_out = fopen("sensor_out", "r");
@@ -109,7 +108,7 @@ int main()
 	{
 		// get forces/positions based on motor powers
 		std::vector<std::pair<arma::vec, arma::vec> > fList;
-		for (int i = 0; i < 9; i++)
+		for (int i = 0; i < 8; i++)
 		{
 			fscanf(motor_out, " %i", &motorPower[i]);
 			std::cout << motorPower[i] << " ";
