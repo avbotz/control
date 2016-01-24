@@ -68,9 +68,9 @@ flash: control.bin
 .PHONY: clean
 
 clean:
-	rm -f $(BUILDDIR)/*.o
+	rm -f $(BUILDDIR)/*
 	rm -f $(EXE)
-	rm -f $(ARDLIB_BUILDDIR)/*.o
+	rm -f $(ARDLIB_BUILDDIR)/*
 	rm -f $(EXE_ARD)
 	rm -f -d $(BUILDDIR)
 	rm -f -d $(ARDLIB_BUILDDIR)

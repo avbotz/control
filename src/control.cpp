@@ -47,6 +47,7 @@ int control(FILE* cpu_in, FILE* cpu_out, FILE* sensor_in, FILE* sensor_out, FILE
 			float thrust = 0;
 			for (uint8_t j = 0; j < numControllers; j++)
 				thrust += pidValues[j] * thrusterMatrix[i*numControllers + j];
+			thrust = (thrust > 100) ? 100 : (thrust < -100) ? -100 : thrust;
 			fprintf(motor_out, "%i ", (int) thrust);
 			fflush(motor_out);
 		}
