@@ -1,3 +1,4 @@
+#include <string.h>
 #include "io.h"
 
 int put_cpu(char, FILE*);
@@ -22,30 +23,55 @@ FILE motor_out_file = FDEV_SETUP_STREAM(put_motor, NULL, _FDEV_SETUP_WRITE);
 
 #include "Arduino.h"
 
+
+struct
+{
+	bool cpu	: 1;
+	bool sensor	: 1;
+} serial_is_init; // for each Serial, whether the necessary .begin(baud)
+				  // method has been called
+
+
 FILE* cpu_in(char* file)
 {
-	if (!Serial) Serial.begin(9600);
+	if (!serial_is_init.cpu)
+	{
+		Serial.begin(9600);
+		serial_is_init.cpu = 1;
+	}
 //	return &cpu_in_file;
 	return fdevopen(NULL, get_cpu);
 }
 
 FILE* cpu_out(char* file)
 {
-	if (!Serial) Serial.begin(9600);
+	if (!serial_is_init.cpu)
+	{
+		Serial.begin(9600);
+		serial_is_init.cpu = 1;
+	}
 //	return &cpu_out_file;
 	return fdevopen(put_cpu, NULL);
 }
 
 FILE* sensor_in(char* file)
 {
-	if (!Serial3) Serial3.begin(38400);
+	if (!serial_is_init.sensor)
+	{
+		Serial3.begin(9600);
+		serial_is_init.sensor = 1;
+	}
 //	return &sensor_in_file;
 	return fdevopen(NULL, get_sensor);
 }
 
 FILE* sensor_out(char* file)
 {
-	if (!Serial3) Serial3.begin(38400);
+	if (!serial_is_init.sensor)
+	{
+		Serial3.begin(9600);
+		serial_is_init.sensor = 1;
+	}
 //	return &sensor_out_file;
 	return fdevopen(put_sensor, NULL);
 }
