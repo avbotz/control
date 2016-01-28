@@ -1,5 +1,5 @@
-#ifndef __CONTROL_H__
-#define __CONTROL_H__
+#ifndef __CONTROL_HPP__
+#define __CONTROL_HPP__
 
 #include <stdio.h>
 

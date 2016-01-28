@@ -1,54 +1,75 @@
-#include "io.h"
+#include "io.hpp"
 
-FILE* cpu_in(char* file)
+#include <cstdarg>
+
+static FILE* cpu_in;
+static FILE* cpu_out;
+static FILE* state_in;
+static FILE* motor_out;
+static FILE* config_in;
+static FILE* config_out;
+
+void cscanf(const char* format, ...)
 {
-	if (file == NULL) return stdin;
-	else return fopen(file, "r");
+	va_list args;
+	va_start(args, format);
+	vfscanf(cpu_in, format, args);
+	va_end(args);
 }
 
-FILE* cpu_out(char* file)
+void cprintf(const char* format, ...)
 {
-	if (file == NULL) return stdout;
-	else return fopen(file, "w");
+	va_list args;
+	va_start(args, format);
+	vfprintf(cpu_out, format, args);
+	va_end(args);
 }
 
-FILE* sensor_in(char* file)
+State getState()
 {
-	if (file == NULL) return fopen("./sim/sensor_in", "r");
-	else return fopen(file, "r");
+	State state;
+	for (uint8_t i = 0; i < numProperties; i++)
+		fscanf(state_in, "%f", &state.property[i]);
+	return state;
 }
 
-FILE* sensor_out(char* file)
+void setMotor(const Motor& motor)
 {
-	if (file == NULL) return fopen("./sim/sensor_out", "w");
-	else return fopen(file, "w");
+	for (uint8_t i = 0; i < numMotors; i++)
+		fprintf(motor_out, "%f ", motor.thrust[i]);
+	fprintf(motor_out, "\n");
 }
 
-FILE* motor_in(char* file)
+Config getConfig()
 {
-	if (file == NULL) return fopen("./sim/motor_in", "r");
-	else return fopen(file, "r");
+	Config config;
+	for (uint8_t i = 0; i < numFlags; i++)
+	{
+		int flag;
+		fscanf(config_in, "%i ", &flag);
+		config.flag[i] = flag > 0;
+	}
+	for (uint8_t i = 0; i < numSettings; i++)
+		fscanf(config_in, "%f ", &config.setting[i]);
+	return config;
 }
 
-FILE* motor_out(char* file)
+void setConfig(const Config& config)
 {
-	if (file == NULL) return fopen("./sim/motor_out", "w");
-	else return fopen(file, "w");
-}
-
-FILE* config_in(char* file)
-{
-	if (file == NULL) return fopen("config_in", "r");
-	else return fopen(file, "r");
-}
-
-FILE* config_out(char* file)
-{
-	if (file == NULL) return fopen("config_out", "w");
-	else return fopen(file, "w");
+	for (uint8_t i = 0; i < numFlags; i++)
+		fprintf(config_out, "%i ", config.flag[i] ? 1 : 0);
+	for (uint8_t i = 0; i < numSettings; i++)
+		fprintf(config_out, "%f ", config.setting[i]);
+	fprintf(config_out, "\n");
 }
 
 void init_io()
 {
-	// only does stuff on arduino
+	cpu_in = fopen("cpu_in", "r");
+	cpu_out = fopen("cpu_out", "w");
+	state_in = fopen("state_in", "r");
+	motor_out = fopen("motor_out", "w");
+	config_in = fopen("config_in", "r");
+	config_out = fopen("config_out", "w");
 }
+

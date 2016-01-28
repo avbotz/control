@@ -1,56 +1,46 @@
-#include "control.h"
+#include "control.hpp"
 
-#include "pid.h"
+#include "pid.hpp"
+#include "io.hpp"
 
-int control(FILE* cpu_in, FILE* cpu_out, FILE* sensor_in, FILE* sensor_out, FILE* motor_in, FILE* motor_out, FILE* config_in, FILE* config_out)
+int main()
 {
-	const int numControllers = 4;
-	const int numMotors = 8;
+	init_io();
 
-	// read PID filter gains from configuration
-	float gains[numControllers * 3]; // yp, yi, yd, pp, pi, ...
-	for (uint8_t i = 0; i < numControllers * 3; i++)
-		fscanf(config_in, " %f", &gains[i]);
+	// read config
+	Config config = getConfig();
+	// the first (3*numProperties) values are PID gains
+	float* gains = config.setting;
+	// the next (numProperties*numMotors) map pid results to desired thrust (linear transformation)
+	float* thrusterMatrix = config.setting + 3*numProperties;
 
 	// create PID filters
-	Pid controllers[numControllers];
-	for (uint8_t i = 0; i < numControllers; i++)
+	Pid controllers[numProperties];
+	for (uint8_t i = 0; i < numProperties; i++)
 		controllers[i] = makePid(gains[3*i], gains[3*i + 1], gains[3*i + 2]);
 
-	// linear transformation from pid results and desired thrust
-	float thrusterMatrix[numMotors * numControllers];
-	for (uint8_t i = 0; i < numMotors; i++)
-		for (uint8_t j = 0; j < numControllers; j++)
-			fscanf(config_in, " %f", &thrusterMatrix[i*numControllers + j]);
-
 	// the desired state
-	float desired[numControllers] = {0};
+	State desired = {{0}};
 	
-	// get them from config for now
-	for (uint8_t i = 0; i < numControllers; i++)
-		fscanf(config_in, " %f", &desired[i]);
-	
-	while (1)
+	while (true)
 	{
 		// read current variable values and send them to PID
-		float pidValues[numControllers] = {0};
-		for (uint8_t i = 0; i < numControllers; i++)
-		{
-			float value;
-			fscanf(sensor_in, " %f", &value);
-			pidValues[i] = process(&controllers[i], value - desired[i]);
-		}
+		State state = getState();
+		float pidValues[numProperties] = {0};
+		for (uint8_t i = 0; i < numProperties; i++)
+			pidValues[i] = process(&controllers[i], state.property[i] - desired.property[i]);
 
 		// determine desired thrust levels
+		Motor motor;
 		for (uint8_t i = 0; i < numMotors; i++)
 		{
 			float thrust = 0;
-			for (uint8_t j = 0; j < numControllers; j++)
-				thrust += pidValues[j] * thrusterMatrix[i*numControllers + j];
+			for (uint8_t j = 0; j < numProperties; j++)
+				thrust += pidValues[j] * thrusterMatrix[i*numProperties + j];
 			thrust = (thrust > 100) ? 100 : (thrust < -100) ? -100 : thrust;
-			fprintf(motor_out, "%i ", (int) thrust);
-			fflush(motor_out);
+			motor.thrust[i] = thrust;
 		}
+		setMotor(motor);
 	}
 
 	return 0;

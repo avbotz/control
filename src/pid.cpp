@@ -1,7 +1,4 @@
-#include "pid.h"
-
-#define numControllers 4
-#define numMotors 9
+#include "pid.hpp"
 
 Pid makePid(float kp, float ki, float kd)
 {
