@@ -29,15 +29,18 @@ State getState()
 {
 	State state;
 	for (uint8_t i = 0; i < numProperties; i++)
-		fscanf(state_in, "%f", &state.property[i]);
+		fscanf(state_in, "%f ", &state.property[i]);
 	return state;
 }
 
 void setMotor(const Motor& motor)
 {
 	for (uint8_t i = 0; i < numMotors; i++)
+	{
 		fprintf(motor_out, "%f ", motor.thrust[i]);
+	}
 	fprintf(motor_out, "\n");
+	fflush(motor_out);
 }
 
 Config getConfig()
@@ -65,10 +68,10 @@ void setConfig(const Config& config)
 
 void init_io()
 {
-	cpu_in = fopen("cpu_in", "r");
-	cpu_out = fopen("cpu_out", "w");
-	state_in = fopen("state_in", "r");
-	motor_out = fopen("motor_out", "w");
+	cpu_in = stdin;  //fopen("cpu_in", "r");
+	cpu_out = stdout;//fopen("cpu_out", "w");
+	state_in = fopen("./sim/state_in", "r");
+	motor_out = fopen("./sim/motor_out", "w");
 	config_in = fopen("config_in", "r");
 	config_out = fopen("config_out", "w");
 }
