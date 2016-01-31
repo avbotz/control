@@ -5,7 +5,7 @@
 enum motors {VERT_FL, VERT_FR, VERT_BR, VERT_BL, DIAG_L, DIAG_R, SRGE_L, SRGE_R, STRAFE};
 
 // Power of each motor
-int motorPower[9];
+float motorPower[9];
 
 // Position of each motor
 arma::vec motorPos[9];
