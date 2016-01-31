@@ -22,8 +22,8 @@ static const uint8_t numFlags = 0;
 
 struct Config
 {
-	float setting[numSettings];
 	bool flag[numFlags];
+	float setting[numSettings];
 };
 
 #endif

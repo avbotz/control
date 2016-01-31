@@ -1,6 +1,7 @@
 #include "io.hpp"
 
-#include <cstdarg>
+#include <stdarg.h>
+#include <stdio.h>
 
 static FILE* cpu_in;
 static FILE* cpu_out;

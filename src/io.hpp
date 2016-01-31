@@ -1,8 +1,6 @@
 #ifndef __IO_HPP__
 #define __IO_HPP__
 
-#include <stdio.h>
-
 #include "global.hpp"
 
 void cscanf(const char*, ...);
