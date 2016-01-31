@@ -3,7 +3,7 @@ ARDLIB_SOURCEDIR = $(ARDLIB_DIR)/src
 ARDLIB_BUILDDIR = $(ARDLIB_DIR)/build
 ARDLIB_INCLUDEDIR = $(ARDLIB_DIR)/include
 
-ARDLIB_SOURCE_FILES = abi.cpp CDC.cpp HardwareSerial0.cpp HardwareSerial1.cpp HardwareSerial2.cpp HardwareSerial3.cpp HardwareSerial.cpp HID.cpp hooks.c IPAddress.cpp new.cpp Print.cpp Stream.cpp Tone.cpp USBCore.cpp WInterrupts.c wiring_analog.c wiring.c wiring_digital.c wiring_pulse.c wiring_pulse.S wiring_shift.c WMath.cpp WString.cpp
+ARDLIB_SOURCE_FILES = abi.cpp CDC.cpp HardwareSerial0.cpp HardwareSerial1.cpp HardwareSerial2.cpp HardwareSerial3.cpp HardwareSerial.cpp HID.cpp hooks.c IPAddress.cpp new.cpp Print.cpp Stream.cpp Tone.cpp USBCore.cpp WInterrupts.c wiring_analog.c wiring.c wiring_digital.c wiring_pulse.c wiring_pulse.S wiring_shift.c WMath.cpp WString.cpp EEPROM.cpp
 ARDLIB_SOURCES = $(patsubst %,$(ARDLIB_SOURCEDIR)/%,$(ARDLIB_SOURCE_FILES))
 ARDLIB_OBJECTS = $(patsubst $(ARDLIB_SOURCEDIR)/%,$(ARDLIB_BUILDDIR)/%.o,$(ARDLIB_SOURCES))
 
