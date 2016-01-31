@@ -22,7 +22,7 @@ EXE_ARD = control.bin
 CC_ARD = avr-g++
 CFLAGS_ARD  = -c -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics -MMD -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR -I$(ARDLIB_INCLUDEDIR)
 SFLAGS_ARD = -c -g -x assembler-with-cpp -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR
-LDFLAGS_ARD = -w -Os -Wl,--gc-sections,--relax -mmcu=atmega2560
+LDFLAGS_ARD = -w -Os -Wl,--gc-sections,--relax -mmcu=atmega2560 -Wl,-u,vfprintf -lprintf_flt -lm -Wl,-u,vfscanf -lscanf_flt -lm
 SOURCE_FILES_ARD = control.cpp pid.cpp io_arduino.cpp
 SOURCES_ARD = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES_ARD))
 OBJECTS_ARD = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%_ard.o,$(SOURCES_ARD))
