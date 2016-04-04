@@ -142,14 +142,19 @@ class HardwareSerial : public Stream
   extern HardwareSerial Serial1;
   #define HAVE_HWSERIAL1
 #endif
-#if defined(UBRR2H)
-  extern HardwareSerial Serial2;
-  #define HAVE_HWSERIAL2
-#endif
-#if defined(UBRR3H)
-  extern HardwareSerial Serial3;
-  #define HAVE_HWSERIAL3
-#endif
+/* REMOVED so arduino doesn't set the serial ISRs for these. We want to set
+ * them ourselves for the ahrs and thrusters. (Remember to change this if you
+ * change the serial ports they use!)
+ *
+ * #if defined(UBRR2H)
+ *   extern HardwareSerial Serial2;
+ *   #define HAVE_HWSERIAL2
+ * #endif
+ * #if defined(UBRR3H)
+ *   extern HardwareSerial Serial3;
+ *   #define HAVE_HWSERIAL3
+ * #endif
+ */
 
 extern void serialEventRun(void) __attribute__((weak));
 
