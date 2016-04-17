@@ -150,7 +150,7 @@ void io_ahrs_recv_stop()
 
 // new is initialized to 0, so the reader/consumer can know initially when
 // there has been any valid data (eg waiting to run PID until a complete data
-// set has been received from the ahrs.
+// set has been received from the ahrs.)
 //
 // clean and new need to be volatile so changes from ISR are visible and so
 // changes outside ISR are correctly ordered relative to disabling and
@@ -197,14 +197,14 @@ static bool io_ahrs_tripbuf_update_crit()
  */
 bool io_ahrs_tripbuf_update()
 {
-	if (CC_XXX(UCSR, NUSART, B) & (1 < CC_XXX(RXCIE, NUSART, )))
+	if (CC_XXX(UCSR, NUSART, B) & (1U << CC_XXX(RXCIE, NUSART, )))
 	{
 		// Disable Receive Complete Interrupt, because we assume that if it is
 		// enabled, io_ahrs_tripbuf_offer may be run from the interrupt handler
-		CC_XXX(UCSR, NUSART, B) &= ~(1 << CC_XXX(RXCIE, NUSART, ));
+		CC_XXX(UCSR, NUSART, B) &= ~(1U << CC_XXX(RXCIE, NUSART, ));
 		bool updated = io_ahrs_tripbuf_update_crit();
 		// Reenable Receive Complete Interrupt
-		CC_XXX(UCSR, NUSART, B) |= (1 << CC_XXX(RXCIE, NUSART, ));
+		CC_XXX(UCSR, NUSART, B) |= (1U << CC_XXX(RXCIE, NUSART, ));
 		return updated;
 	}
 	return io_ahrs_tripbuf_update_crit();
