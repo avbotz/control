@@ -37,8 +37,6 @@ void init_io()
 {
 	io_cpu_init();
 	io_depth_init("depth_in");
-	// We'll assume the arduino stuff enables global interrupts for us on the
-	// avr
 	io_ahrs_init("/dev/ttyUSB0");
 	// May not be strictly necessary, since the data components can be saved to
 	// non-volatile memory.
