@@ -7,6 +7,8 @@
 #include "ahrs.h"
 #include "io_depth.hpp"
 #include "io_cpu.hpp"
+#include "io_m5.h"
+#include "m5.h"
 
 
 State getState()
@@ -27,16 +29,34 @@ State getState()
 
 void setMotor(const Motor& motor)
 {
-	// TODO
+	for (uint_fast8_t t = numMotors; t--;)
+	{
+		m5_power((enum thruster)t, motor.thrust[t]);
+	}
+	m5_power_offer();
+
 	for (uint8_t i = 0; i < numMotors; i++)
 		// send to motor controller here
 		cprintf("motor; %i: %f\n", i, motor.thrust[i]);
+}
+
+static void setpowers(float vals[NUM_THRUSTERS])
+{
+	for (uint_fast8_t t = NUM_THRUSTERS; t--;)
+	{
+		// zero powers
+		m5_power((enum thruster)t, vals[t]);
+	}
 }
 
 void init_io()
 {
 	io_cpu_init();
 	io_depth_init("depth_in");
+	io_m5_init("/dev/ttyUSB1");
+	float powers[NUM_THRUSTERS] = {0.f};
+	setpowers(powers); // zero powers
+	io_m5_trans_start(m5_power_trans); // Start transmitting data asynchcronously
 	io_ahrs_init("/dev/ttyUSB0");
 	// May not be strictly necessary, since the data components can be saved to
 	// non-volatile memory.
