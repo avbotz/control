@@ -162,7 +162,7 @@ static bool pack_power(unsigned char *c)
 				state = CRC;
 				return false;
 		case CRC:;
-				 //
+
 				// little endian
 				*c = 0xFFU & (crc >> b);
 			}
