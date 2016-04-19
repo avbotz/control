@@ -14,7 +14,7 @@
 #define CRC32_INIT_SEED ((uint32_t)0xFFFFFFFF)
 
 /**
- * The CRC32 of a any value with its little endian CRC32 appended
+ * The CRC32 of any value with its little endian CRC32 appended
  */
 #define CRC32_LE_RESIDUE ((uint32_t)0x2144DF1C)
 
