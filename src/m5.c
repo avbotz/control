@@ -39,7 +39,7 @@
 
 // Manually calculated assuming NUM_THRUSTERS == 8. Update if any part of the
 // header changes! (32 bit CRC: ANSI X3.66 per VRCSR doc)
-#define PROPULSION_COMMAND_HEADER_CRC ((uint_fast32_t)0x58F7B5AB)
+#define PROPULSION_COMMAND_HEADER_CRC ((uint_fast32_t)0xDAE70014)
 
 // Manually calculated assuming R_ID == 0 (without final xor mask)
 #define CRC_POST_R_ID ((uint_fast32_t)0xEACEB963)
