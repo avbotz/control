@@ -31,13 +31,19 @@ void setMotor(const Motor& motor)
 {
 	for (uint_fast8_t t = numMotors; t--;)
 	{
-		m5_power((enum thruster)t, motor.thrust[t]);
+		// Assumes VERT_FR is the thruster with the lowest Motor ID and all of
+		// the following motor IDs are consecutive. This is done so we can skip
+		// beginning Motor IDs (ie Motor ID 0 since it caused a bug with our
+		// thrusters).
+		m5_power((enum thruster)(t + VERT_FR), motor.thrust[t]);
 	}
 	m5_power_offer();
 
 	for (uint8_t i = 0; i < numMotors; i++)
+	{
 		// send to motor controller here
 		cprintf("motor; %i: %f\n", i, motor.thrust[i]);
+	}
 }
 
 static void setpowers(float vals[NUM_THRUSTERS])

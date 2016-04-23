@@ -48,6 +48,8 @@
 // triple buffer coordinated with io_m5_tripbuf... functions
 static struct
 {
+	// If there are any gaps in the thruster enum, we will just waste the space
+	// for those indices to simplify sending the PROPLUSION_COMMAND
 	float power[NUM_THRUSTERS]; // Powers range [-1, 1]
 } m5[3];
 
