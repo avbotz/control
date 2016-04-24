@@ -28,9 +28,9 @@ OBJECTS_PC = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%_pc.o,$(SOURCES_PC))
 
 EXE_ARD = control.bin
 CXX_ARD = avr-g++
-CXXFLAGS_ARD = -c -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics -MMD -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR -DIEEE754 -DAVR -I$(SOURCEDIR) -I$(ARDLIB_INCLUDEDIR)
+CXXFLAGS_ARD = -c -std=c++11 -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -fno-threadsafe-statics -MMD -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR -DIEEE754 -DAVR -I$(SOURCEDIR) -I$(ARDLIB_INCLUDEDIR)
 CC_ARD = avr-gcc
-CFLAGS_ARD = -c -g -Os -w -ffunction-sections -fdata-sections -fno-threadsafe-statics -MMD -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR -DIEEE754 -DAVR -DNDEBUG -I$(SOURCEDIR) -I$(ARDLIB_INCLUDEDIR)
+CFLAGS_ARD = -c -std=c99 -g -Os -w -ffunction-sections -fdata-sections -fno-threadsafe-statics -MMD -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR -DIEEE754 -DAVR -DNDEBUG -I$(SOURCEDIR) -I$(ARDLIB_INCLUDEDIR)
 SFLAGS_ARD = -c -g -x assembler-with-cpp -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR
 LDFLAGS_ARD = -w -Os -Wl,--gc-sections,--relax -mmcu=atmega2560 -Wl,-u,vfprintf -lprintf_flt -lm -Wl,-u,vfscanf -lscanf_flt -lm
 SOURCE_FILES_ARD = control.cpp pid.cpp io.cpp ahrs.c crc_xmodem_generic.c io_ahrs_avr.c io_arduino.cpp io_depth_arduino.cpp io_m5_avr.c m5.c crc32.c

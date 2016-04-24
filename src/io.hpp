@@ -5,6 +5,7 @@
 
 void cscanf(const char*, ...);
 void cprintf(const char*, ...);
+int cgetc();
 
 State getState();
 

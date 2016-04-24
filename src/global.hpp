@@ -10,6 +10,16 @@ struct State
 	float property[numProperties];
 };
 
+enum
+{
+	S_X,
+	S_Y,
+	S_DEPTH,
+	S_YAW,
+	S_PITCH,
+	S_ROLL,
+};
+
 static const uint8_t numMotors = 8;
 
 struct Motor

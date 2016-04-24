@@ -1,5 +1,8 @@
 #include "control.hpp"
 
+#include <stdio.h>
+#include <string.h>
+
 #include "pid.hpp"
 #include "io.hpp"
 
@@ -21,9 +24,54 @@ int main()
 
 	// the desired state
 	State desired = {{0}};
-	
+
+	// stuff for parsing cpu input
+	size_t c_idx = 0;
+	size_t cbuffer_size = 256;
+	char cbuffer[cbuffer_size];
+
 	while (true)
 	{
+		// process cpu communication
+		int c;
+		while ((c = cgetc()) != EOF)
+		{
+			if (c_idx >= cbuffer_size) c_idx = 0;
+			cbuffer[c_idx++] = (char)c;
+
+			// get desired state from cpu
+			float x, y, depth, yaw, pitch, roll;
+			if (sscanf(cbuffer, " c %f %f %f %f %f %f", &x, &y, &depth, &yaw, &pitch, &roll) == 6)
+			{
+				desired.property[S_X] = x;
+				desired.property[S_Y] = y;
+				desired.property[S_DEPTH] = depth;
+				desired.property[S_YAW] = yaw;
+				desired.property[S_PITCH] = pitch;
+				desired.property[S_ROLL] = roll;
+
+				c_idx = 0;
+				memset(cbuffer, 0, cbuffer_size);
+			}
+
+			// send state to cpu
+			char space;
+			if (sscanf(cbuffer, " s%c", &space) == 1) // I hope space is whitespace...
+			{
+				cprintf("s %f %f %f %f %f %f\n",
+					desired.property[S_X],
+					desired.property[S_Y],
+					desired.property[S_DEPTH],
+					desired.property[S_YAW],
+					desired.property[S_PITCH],
+					desired.property[S_ROLL]
+				);
+
+				c_idx = 0;
+				memset(cbuffer, 0, cbuffer_size);
+			}
+		}
+
 		// read current variable values and send them to PID
 		State state = getState();
 		float pidValues[numProperties] = {0};

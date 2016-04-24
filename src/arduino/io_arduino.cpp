@@ -68,6 +68,11 @@ void cprintf(const char* format, ...)
 	va_end(args);
 }
 
+int cgetc()
+{
+	return fgetc(cpu_in);
+}
+
 #include "EEPROM.h"
 
 Config getConfig()
