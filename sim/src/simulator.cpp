@@ -57,10 +57,10 @@ void output()
 {
 	// find pitch roll yaw from rotation matrix
 	arma::vec ypr = {atan2(angle.at(1,0), angle.at(0,0)), atan2(-angle.at(2,0),sqrt(angle.at(1,0)*angle.at(1,0)+angle.at(0,0)*angle.at(0,0))), atan2(angle.at(2,1), angle.at(2,2))};
+	fprintf(state_in, "%f ", ypr[0]); 
 	fprintf(state_in, "%f ", ypr[1]); 
 	fprintf(state_in, "%f ", ypr[2]); 
 	fprintf(state_in, "%f ", posit[2]); 
-	fprintf(state_in, "%f ", ypr[0]); 
 	fprintf(state_in, "\n"); 
 	fflush(state_in);
 	
@@ -101,7 +101,6 @@ int main()
 	state_in = fopen("state_in", "w");
 	motor_out = fopen("motor_out", "r");
 	//FILE *log = fopen("log", "w");
-	fprintf(state_in, "0 ");
 	output();
 
 	while(true)

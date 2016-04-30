@@ -1,5 +1,4 @@
 #!/bin/bash
-cd ./sim/
+echo "Press ctrl+D to step forward"
 ./simulator &
-cd ..
 ./control
