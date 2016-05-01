@@ -9,6 +9,7 @@
 #include "io_cpu.hpp"
 #include "io_m5.h"
 #include "m5.h"
+#include "macrodef.h"
 
 
 State getState()
@@ -27,6 +28,8 @@ State getState()
 	return curr;
 }
 
+// The actual power values transmitted to the thrusters are truncated to the
+// range [-1, 1].
 void setMotor(const Motor& motor)
 {
 	for (uint_fast8_t t = numMotors; t--;)
@@ -35,14 +38,14 @@ void setMotor(const Motor& motor)
 		// the following motor IDs are consecutive. This is done so we can skip
 		// beginning Motor IDs (ie Motor ID 0 since it caused a bug with our
 		// thrusters).
-		m5_power((enum thruster)(t + VERT_FR), motor.thrust[t]);
+		m5_power((enum thruster)(t + VERT_FR),
+				TRUNC(-1.f, motor.thrust[t], 1.f));
 	}
 	m5_power_offer();
 
 	for (uint8_t i = 0; i < numMotors; i++)
 	{
-		// send to motor controller here
-		cprintf("motor; %i: %f\n", i, motor.thrust[i]);
+		cprintf("motor; %i: %f\n", i, TRUNC(-1.f, motor.thrust[i], 1.f));
 	}
 }
 
