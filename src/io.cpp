@@ -41,7 +41,7 @@ void setMotor(const Motor& motor)
 		m5_power((enum thruster)(t + VERT_FR),
 				TRUNC(-1.f, motor.thrust[t], 1.f));
 	}
-	m5_power_offer();
+	m5_power_offer_resume();
 
 	for (uint8_t i = 0; i < numMotors; i++)
 	{
@@ -65,7 +65,7 @@ void init_io()
 	io_m5_init("/dev/ttyUSB1");
 	float powers[NUM_THRUSTERS] = {0.f};
 	setpowers(powers); // zero powers
-	io_m5_trans_start(m5_power_trans); // Start transmitting data asynchcronously
+	io_m5_trans_set(m5_power_trans); // Start transmitting data asynchcronously
 	io_ahrs_init("/dev/ttyUSB0");
 	// May not be strictly necessary, since the data components can be saved to
 	// non-volatile memory.
