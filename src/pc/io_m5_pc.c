@@ -141,7 +141,7 @@ void io_m5_trans_trywait()
 	ts.tv_sec += WAIT_MILLI / 1000;
 	ts.tv_nsec += WAIT_MILLI * 1000000L;
 	// normalize timespec
-	if (ts.tv_nsec > 1000000000L)
+	if (ts.tv_nsec >= 1000000000L)
 	{
 		ts.tv_nsec -= 1000000000L;
 		ts.tv_sec += 1;
