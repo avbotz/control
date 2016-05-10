@@ -412,11 +412,10 @@ ISR(CC_XXX(TIMER, NTIMER, _COMPA_vect))
 {
 	assert(!tripbuf.new /* This interrupt should never be enabled when tripbuf.new == true */);
 
-	// Disable this interrupt. Stopping and setting the timer to 0 wouldn't be
-	// enough because the Output Compare Register may equal 0.
+	// Disable this interrupt. Either this or disabling the timer alone would
+	// be enough, I think.
 	CC_XXX(TIMSK, NTIMER, ) &= ~(1U << CC_XXX(OCIE, NTIMER, A));
-
-	// Disable the timer. This is probably not strictly necessary.
+	// Disable the timer.
 	CC_XXX(TCCR, NTIMER, B) &= ~((1U << CC_XXX(CS, NTIMER, 0)) |
 			(1U << CC_XXX(CS, NTIMER, 1)) | (1U << CC_XXX(CS, NTIMER, 2)));
 
