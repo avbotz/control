@@ -365,7 +365,7 @@ static bool parse_att(unsigned char const c)
 		else
 		{
 			// Invalid crc, attitude data will be discarded
-			DEBUG("Invalid CRC: %04X", crc_xmodem_update(crc, c));
+			DEBUG("Invalid CRC: 0x%04X", crc_xmodem_update(crc, c));
 			state = INIT;
 			return false;
 		}
