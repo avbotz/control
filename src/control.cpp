@@ -30,6 +30,8 @@ int main()
 	size_t cbuffer_size = 256;
 	char cbuffer[cbuffer_size];
 
+	bool kill_state = alive();
+
 	while (true)
 	{
 		// process cpu communication
@@ -39,9 +41,21 @@ int main()
 			if (c_idx >= cbuffer_size) c_idx = 0;
 			cbuffer[c_idx++] = (char)c;
 
+			// used for scanf error checking
+			char space;
+
+			// return kill state
+			if (sscanf(cbuffer, " a%c", &space) == 1)
+			{
+				cprintf("%i\n", kill_state ? 1 : 0);
+
+				c_idx = 0;
+				memset(cbuffer, 0, cbuffer_size);
+			}
+
 			// get desired state from cpu
 			float x, y, depth, yaw, pitch, roll;
-			if (sscanf(cbuffer, " c %f %f %f %f %f %f", &x, &y, &depth, &yaw, &pitch, &roll) == 6)
+			if (sscanf(cbuffer, " s s %f %f %f %f %f %f", &x, &y, &depth, &yaw, &pitch, &roll) == 6)
 			{
 				desired.property[S_X] = x;
 				desired.property[S_Y] = y;
@@ -55,8 +69,7 @@ int main()
 			}
 
 			// send state to cpu
-			char space;
-			if (sscanf(cbuffer, " s%c", &space) == 1) // I hope space is whitespace...
+			if (sscanf(cbuffer, " c%c", &space) == 1)
 			{
 				cprintf("s %f %f %f %f %f %f\n",
 					desired.property[S_X],
@@ -71,6 +84,9 @@ int main()
 				memset(cbuffer, 0, cbuffer_size);
 			}
 		}
+
+		// check kill state
+		kill_state = alive();
 
 		// read current variable values and send them to PID
 		State state = getState();

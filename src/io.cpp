@@ -3,6 +3,7 @@
  * code and the cpp interfaces the PID code uses.
  */
 #include "io.hpp"
+#include "io_kill.hpp"
 #include "io_ahrs.h"
 #include "ahrs.h"
 #include "io_depth.hpp"
@@ -11,6 +12,10 @@
 #include "m5.h"
 #include "macrodef.h"
 
+bool alive()
+{
+	return io_kill();
+}
 
 State getState()
 {
@@ -45,7 +50,7 @@ void setMotor(const Motor& motor)
 
 	for (uint8_t i = 0; i < numMotors; i++)
 	{
-		cprintf("motor; %i: %f\n", i, TRUNC(-1.f, motor.thrust[i], 1.f));
+//		cprintf("motor; %i: %f\n", i, TRUNC(-1.f, motor.thrust[i], 1.f));
 	}
 }
 
@@ -60,6 +65,7 @@ static void setpowers(float vals[NUM_THRUSTERS])
 
 void init_io()
 {
+	io_kill_init();
 	io_cpu_init();
 	io_depth_init("depth_in");
 	io_m5_init("/dev/ttyUSB1");

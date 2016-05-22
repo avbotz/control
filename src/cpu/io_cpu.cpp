@@ -3,6 +3,11 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+bool alive()
+{
+	return true;
+}
+
 static FILE* cpu_in;
 static FILE* cpu_out;
 static FILE* state_in;

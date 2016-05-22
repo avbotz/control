@@ -3,6 +3,8 @@
 
 #include "global.hpp"
 
+bool alive();
+
 void cscanf(const char*, ...);
 void cprintf(const char*, ...);
 int cgetc();
