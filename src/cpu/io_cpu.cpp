@@ -77,6 +77,18 @@ void setConfig(const Config& config)
 	fprintf(config_out, "\n");
 }
 
+void activateRelay(enum Relay)
+{
+	// Do nothing for now
+	return;
+}
+
+void deactivateRelay(enum Relay)
+{
+	// Do nothing for now
+	return;
+}
+
 void init_io()
 {
 	cpu_in = stdin;

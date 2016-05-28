@@ -13,10 +13,13 @@ State getState();
 
 void setMotor(const Motor&);
 
+void activateRelay(enum Relay);
+
+void deactivateRelay(enum Relay);
+
 Config getConfig();
 void setConfig(const Config&);
 
 void init_io();
 
 #endif
-

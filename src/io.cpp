@@ -10,6 +10,7 @@
 #include "io_cpu.hpp"
 #include "io_m5.h"
 #include "m5.h"
+#include "io_relay.h"
 #include "macrodef.h"
 
 bool alive()
@@ -63,6 +64,16 @@ static void setpowers(float vals[NUM_THRUSTERS])
 	}
 }
 
+void activateRelay(enum Relay r)
+{
+	io_relay_on((relay)r);
+}
+
+void deactivateRelay(enum Relay r)
+{
+	io_relay_off((relay)r);
+}
+
 void init_io()
 {
 	io_kill_init();
@@ -78,5 +89,6 @@ void init_io()
 	ahrs_set_datacomp();
 	ahrs_cont_start();
 	io_ahrs_recv_start(ahrs_att_recv); // Start receiving data asynchronously
+	io_relay_init();
 	return;
 }

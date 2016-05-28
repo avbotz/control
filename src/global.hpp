@@ -5,6 +5,15 @@
 
 static const uint8_t numProperties = 4;
 
+enum Relay
+{
+	R_DROPPER,
+	R_GRABBER_L,
+	R_GRABBER_R,
+	R_TORPEDO_L,
+	R_TORPEDO_R
+};
+
 struct State
 {
 	float property[numProperties];
