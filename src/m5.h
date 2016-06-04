@@ -13,7 +13,7 @@ extern "C" {
  */
 enum thruster
 {
-	// No motor ID 0, because with the firmwaree 0.9.8 that our thrusters came
+	// No motor ID 0, because with the firmware 0.9.8 that our thrusters came
 	// with, setting motor ID to 0 seemed to really mess up communications,
 	// probably due to a firmware bug.
 	//
