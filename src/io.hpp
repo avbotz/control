@@ -9,7 +9,7 @@ void cscanf(const char*, ...);
 void cprintf(const char*, ...);
 int cgetc();
 
-State getState();
+State getState(const State&);
 
 void setMotor(const Motor&);
 

@@ -6,24 +6,30 @@
 #include "pid.hpp"
 #include "io.hpp"
 
+// Represents distance traveled during one PID iteration at full power in the
+// respective direction
+#define UPDATE_COEFF_X .01f
+#define UPDATE_COEFF_Y .01f
+
 int main()
 {
 	init_io();
 
 	// read config
 	Config config = getConfig();
-	// the first (3*numProperties) values are PID gains
+	// the first (3*NUM_PROPERTIES) values are PID gains
 	float* gains = config.setting;
-	// the next (numProperties*numMotors) map pid results to desired thrust (linear transformation)
-	float* thrusterMatrix = config.setting + 3*numProperties;
+	// the next (NUM_PROPERTIES*numMotors) map pid results to desired thrust (linear transformation)
+	float* thrusterMatrix = config.setting + 3*NUM_PROPERTIES;
 
 	// create PID filters
-	Pid controllers[numProperties];
-	for (uint8_t i = 0; i < numProperties; i++)
+	Pid controllers[NUM_PROPERTIES];
+	for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
 		controllers[i] = makePid(gains[3*i], gains[3*i + 1], gains[3*i + 2]);
 
 	// the desired state
 	State desired = {{0}};
+	State state = {{0}};
 
 	// stuff for parsing cpu input
 	size_t c_idx = 0;
@@ -72,16 +78,33 @@ int main()
 			if (sscanf(cbuffer, " c%c", &space) == 1)
 			{
 				cprintf("s %f %f %f %f %f %f\n",
-					desired.property[S_X],
-					desired.property[S_Y],
-					desired.property[S_DEPTH],
-					desired.property[S_YAW],
-					desired.property[S_PITCH],
-					desired.property[S_ROLL]
+					state.property[S_X],
+					state.property[S_Y],
+					state.property[S_DEPTH],
+					state.property[S_YAW],
+					state.property[S_PITCH],
+					state.property[S_ROLL]
 				);
 
 				c_idx = 0;
 				memset(cbuffer, 0, cbuffer_size);
+			}
+
+			// get a desired configuration value from cpu
+			{
+				size_t setting;
+				float value;
+				if (sscanf(cbuffer, " e %zu %f", &setting, &value) == 2)
+				{
+					if (0 <= setting && setting < numSettings)
+					{
+						Config tmp = getConfig();
+						tmp.setting[setting] = value;
+						setConfig(tmp);
+					}
+					 c_idx = 0;
+					 memset(cbuffer, 0, cbuffer_size);
+				}
 			}
 		}
 
@@ -89,19 +112,31 @@ int main()
 		kill_state = alive();
 
 		// read current variable values and send them to PID
-		State state = getState();
-		float pidValues[numProperties] = {0};
-		for (uint8_t i = 0; i < numProperties; i++)
+		state = getState(state);
+		float pidValues[NUM_PROPERTIES] = {0};
+		for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
 			pidValues[i] = process(&controllers[i], state.property[i] - desired.property[i]);
+
+		// Desired x and y values are relative. Estimate new x and y state
+		// based on their pid values. Assumes velocity is linearly proportional
+		// to the PID value.
+		// PID values are truncated based on assumed range past which thruster
+		// power values would be truncated.
+		desired.property[S_X] -=
+			UPDATE_COEFF_X *
+			((pidValues[S_X] > 1.f) ? 1.f : (pidValues[S_X] < -1.f) ? -1.f : pidValues[S_X]);
+		desired.property[S_Y] -=
+			UPDATE_COEFF_Y *
+			((pidValues[S_Y] > 1.f) ? 1.f : (pidValues[S_Y] < -1.f) ? -1.f : pidValues[S_Y]);
 
 		// determine desired thrust levels
 		Motor motor;
 		for (uint8_t i = 0; i < numMotors; i++)
 		{
 			float thrust = 0;
-			for (uint8_t j = 0; j < numProperties; j++)
-				thrust += pidValues[j] * thrusterMatrix[i*numProperties + j];
-			thrust = (thrust > 100) ? 100 : (thrust < -100) ? -100 : thrust;
+			for (uint8_t j = 0; j < NUM_PROPERTIES; j++)
+				thrust += pidValues[j] * thrusterMatrix[i*NUM_PROPERTIES + j];
+			thrust = (thrust > 1) ? 1 : (thrust < -1) ? -1 : thrust;
 			motor.thrust[i] = thrust;
 		}
 		setMotor(motor);
@@ -109,4 +144,3 @@ int main()
 
 	return 0;
 }
-

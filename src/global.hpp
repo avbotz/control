@@ -3,7 +3,6 @@
 
 #include <stdint.h>
 
-static const uint8_t numProperties = 4;
 
 enum Relay
 {
@@ -14,11 +13,6 @@ enum Relay
 	R_TORPEDO_R
 };
 
-struct State
-{
-	float property[numProperties];
-};
-
 enum
 {
 	S_X,
@@ -27,6 +21,12 @@ enum
 	S_YAW,
 	S_PITCH,
 	S_ROLL,
+	NUM_PROPERTIES
+};
+
+struct State
+{
+	float property[NUM_PROPERTIES];
 };
 
 static const uint8_t numMotors = 8;

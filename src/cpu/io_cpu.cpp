@@ -36,12 +36,12 @@ int cgetc()
 	return fgetc(cpu_in);
 }
 
-State getState()
+State getState(const State &state)
 {
-	State state;
-	for (uint8_t i = 0; i < numProperties; i++)
-		fscanf(state_in, " %f", &state.property[i]);
-	return state;
+	State newstate = state;
+	for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
+		fscanf(state_in, " %f", &newstate.property[i]);
+	return newstate;
 }
 
 void setMotor(const Motor& motor)

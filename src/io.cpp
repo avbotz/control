@@ -2,6 +2,8 @@
  * This file is just glue code between the C interfaces of the ahrs and motor
  * code and the cpp interfaces the PID code uses.
  */
+#include <math.h>
+
 #include "io.hpp"
 #include "io_kill.hpp"
 #include "io_ahrs.h"
@@ -18,20 +20,36 @@ bool alive()
 	return io_kill();
 }
 
-State getState()
+// State.property[S_YAW, S_PITCH, S_ROLL] are non-modular angle values with
+// delta physical degrees == delta 1.0 of the value. eg if S_YAW == 0 and there
+// is a rotation of 720 degrees, S_YAW will become 1.5 rather than .5.
+State getState(const State &current)
 {
 	ahrs_att_update();
-	State curr;
-	for (uint_fast8_t dir = NUM_ATT_AXES; dir--;)
+	State newstate = current;
+	// order of enum must be S_YAW, S_PITCH, S_ROLL
+	for (uint_fast8_t dir = S_YAW; dir <= S_ROLL; ++dir)
 	{
 		// Scale values to range [-.5, .5]
-		curr.property[dir] =
-			(ahrs_att((enum att_axis)dir) - ahrs_range[dir][COMPONENT_MIN]) /
-			(ahrs_range[dir][COMPONENT_MAX] - ahrs_range[dir][COMPONENT_MIN])
-			- .5;
+		newstate.property[dir] = trunc(newstate.property[dir]) +
+			(ahrs_att((enum att_axis)(dir - S_YAW)) - ahrs_range[dir - S_YAW][COMPONENT_MIN]) /
+			(ahrs_range[dir - S_YAW][COMPONENT_MAX] - ahrs_range[dir - S_YAW][COMPONENT_MIN])
+			- .5f;
+
+		// Heuristic to allow non-modular angles. If the angle has changed by
+		// more than .5, we assume that is due to angle overflow because it is
+		// not likely to rotate that much between calls.
+		if (newstate.property[dir] - current.property[dir] < -.5f)
+		{
+			newstate.property[dir] += 1.f;
+		}
+		else if (newstate.property[dir] - current.property[dir] > .5f)
+		{
+			newstate.property[dir] -= 1.f;
+		}
 	}
-	curr.property[3] = io_depth();
-	return curr;
+	newstate.property[S_DEPTH] = io_depth();
+	return newstate;
 }
 
 // The actual power values transmitted to the thrusters are truncated to the
