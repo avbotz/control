@@ -1,4 +1,3 @@
-#include "control.hpp"
 
 #include <stdio.h>
 #include <string.h>
@@ -100,7 +99,38 @@ int main()
 					{
 						Config tmp = getConfig();
 						tmp.setting[setting] = value;
+						// change persistently stored setting value (ie EEPROM
+						// on avr).
 						setConfig(tmp);
+
+						// Change current runtime configuration
+						if (setting < 3*NUM_PROPERTIES)
+						{
+							// set a gain value
+							switch (setting % 3)
+							{
+								case 0:
+								{
+									 controllers[setting / 3].kp = value;
+									 break;
+								}
+								case 1:
+								{
+									controllers[setting / 3].ki = value;
+									break;
+								}
+								case 2:
+								{
+									controllers[setting / 3].kd = value;
+									break;
+								}
+							}
+						}
+						else
+						{
+							// set a thruster matrix value
+							config.setting[setting] = value;
+						}
 					}
 					 c_idx = 0;
 					 memset(cbuffer, 0, cbuffer_size);
