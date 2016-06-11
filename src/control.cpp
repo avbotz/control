@@ -164,6 +164,8 @@ int main()
 		}
 
 		// read current variable values and send them to PID
+		raw_state.property[S_X] = state.property[S_X];
+		raw_state.property[S_Y] = state.property[S_Y];
 		state = raw_state = getState(raw_state);
 		state.property[S_YAW] -= initialYaw;
 
