@@ -31,7 +31,7 @@ State getState(const State &current)
 	for (uint_fast8_t dir = S_YAW; dir <= S_ROLL; ++dir)
 	{
 		// Scale values to range [-.5, .5]
-		newstate.property[dir] = trunc(newstate.property[dir]) +
+		newstate.property[dir] = truncf(newstate.property[dir]) +
 			(ahrs_att((enum att_axis)(dir - S_YAW)) - ahrs_range[dir - S_YAW][COMPONENT_MIN]) /
 			(ahrs_range[dir - S_YAW][COMPONENT_MAX] - ahrs_range[dir - S_YAW][COMPONENT_MIN])
 			- .5f;
