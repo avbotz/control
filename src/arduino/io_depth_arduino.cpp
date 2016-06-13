@@ -1,7 +1,7 @@
 #include "io_depth.hpp"
 #include "Arduino.h"
 
-#define NPIN 12
+#define NPIN A0
 
 void io_depth_init(char const *path)
 {

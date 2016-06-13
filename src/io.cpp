@@ -94,8 +94,8 @@ void deactivateRelay(enum Relay r)
 
 void init_io()
 {
-	io_kill_init();
 	io_cpu_init();
+	io_kill_init();
 	io_depth_init("depth_in");
 	io_m5_init("/dev/ttyUSB1");
 	float powers[NUM_THRUSTERS] = {0.f};

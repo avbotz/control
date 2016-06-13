@@ -15,6 +15,8 @@ int put_cpu(char, FILE*);
 // attempt to copy initialization performed by the Arduino main.cpp
 void io_cpu_init()
 {
+	// initializations done in Arduino lib main.cpp
+	init();
 #if defined(USBCON)
 	USBDevice.attach();
 #endif
