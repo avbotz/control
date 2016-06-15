@@ -7,8 +7,8 @@
 
 // Represents distance traveled during one PID iteration at full power in the
 // respective direction
-#define UPDATE_COEFF_X .01f
-#define UPDATE_COEFF_Y .01f
+#define UPDATE_COEFF_X (1.f/600.f)
+#define UPDATE_COEFF_Y (1.f/600.f)
 
 int main()
 {
