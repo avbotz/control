@@ -10,7 +10,7 @@ extern "C" {
 
 enum {COMPONENT_MIN, COMPONENT_MAX};
 
-enum att_axis {PITCH, YAW, ROLL, NUM_ATT_AXES};
+enum att_axis {YAW, PITCH, ROLL, NUM_ATT_AXES};
 
 extern float const ahrs_range[NUM_ATT_AXES][2];
 
