@@ -17,7 +17,7 @@
 #include "dbg.h"
 
 
-#define NUSART 3
+#define NUSART 2
 #define BAUD 38400UL // default baud of ahrs
 
 

@@ -23,7 +23,7 @@
 #include "macrodef.h"
 
 
-#define NUSART 2 // usart number
+#define NUSART 3 // usart number
 #define DP_PORT A // Port of line drive enable GPIO
 #define NDP 0 // Pin number of line drive enable GPIO
 
