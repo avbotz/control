@@ -97,13 +97,12 @@ int main()
 				{
 					if (0 <= setting && setting < numSettings)
 					{
-						Config tmp = getConfig();
-						tmp.setting[setting] = value;
+						config.setting[setting] = value;
 						// change persistently stored setting value (ie EEPROM
 						// on avr).
-						setConfig(tmp);
+						setConfig(config);
 
-						// Change current runtime configuration
+						// Change current runtime configuration of pid gain
 						if (setting < 3*NUM_PROPERTIES)
 						{
 							// set a gain value
@@ -125,11 +124,6 @@ int main()
 									break;
 								}
 							}
-						}
-						else
-						{
-							// set a thruster matrix value
-							config.setting[setting] = value;
 						}
 					}
 					 c_idx = 0;
