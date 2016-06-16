@@ -139,7 +139,7 @@ int main()
 		state = getState(state);
 		float pidValues[NUM_PROPERTIES] = {0};
 		for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
-			pidValues[i] = process(&controllers[i], state.property[i] - desired.property[i]);
+			pidValues[i] = process(&controllers[i], desired.property[i] - state.property[i]);
 
 		// Desired x and y values are relative. Estimate new x and y state
 		// based on their pid values. Assumes velocity is linearly proportional
