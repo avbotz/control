@@ -139,7 +139,21 @@ int main()
 		state = getState(state);
 		float pidValues[NUM_PROPERTIES] = {0};
 		for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
+		{
 			pidValues[i] = process(&controllers[i], desired.property[i] - state.property[i]);
+			// Truncate sum to keep the integral component magnitude from
+			// significantly exceeding 1 to prevent extreme underdamping due to
+			// the sum building up excessively.
+			float i_comp = controllers[i].sum * controllers[i].ki;
+			if (i_comp < -1.f)
+			{
+				controllers[i].sum = -1.f / controllers[i].ki;
+			}
+			else if (i_comp > 1.f)
+			{
+				controllers[i].sum = 1.f / controllers[i].ki;
+			}
+		}
 
 		// Desired x and y values are relative. Estimate new x and y state
 		// based on their pid values. Assumes velocity is linearly proportional
