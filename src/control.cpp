@@ -91,9 +91,9 @@ int main()
 
 			// get a desired configuration value from cpu
 			{
-				size_t setting;
+				unsigned int setting;
 				float value;
-				if (sscanf(cbuffer, " e %zu %f", &setting, &value) == 2)
+				if (sscanf(cbuffer, " e %u %f", &setting, &value) == 2)
 				{
 					if (0 <= setting && setting < numSettings)
 					{
@@ -103,7 +103,7 @@ int main()
 						setConfig(config);
 
 						// Change current runtime configuration of pid gain
-						if (setting < 3*NUM_PROPERTIES)
+						if (setting < 3 * NUM_PROPERTIES)
 						{
 							// set a gain value
 							switch (setting % 3)
@@ -126,8 +126,8 @@ int main()
 							}
 						}
 					}
-					 c_idx = 0;
-					 memset(cbuffer, 0, cbuffer_size);
+					c_idx = 0;
+					memset(cbuffer, 0, cbuffer_size);
 				}
 			}
 		}
