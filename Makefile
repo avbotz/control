@@ -17,12 +17,12 @@ CC = gcc
 CFLAGS = -g -c -std=c11 -I$(SOURCEDIR) $(CPPFLAGS)
 CPPFLAGS = -DIEEE754
 LDFLAGS =
-SOURCE_FILES = control.cpp pid.cpp io_cpu.cpp
+SOURCE_FILES = control.cpp pid.cpp io_cpu.cpp config.cpp
 SOURCES = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES))
 OBJECTS = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%.o,$(SOURCES))
 
 EXE_PC = control_pc
-SOURCE_FILES_PC = control.cpp pid.cpp io.cpp ahrs.c crc_xmodem_generic.c io_ahrs_pc.c io_pc.cpp io_depth_pc.cpp io_m5_pc.c m5.c crc32.c io_relay_pc.c
+SOURCE_FILES_PC = control.cpp pid.cpp io.cpp ahrs.c crc_xmodem_generic.c io_ahrs_pc.c io_pc.cpp io_depth_pc.cpp io_m5_pc.c m5.c crc32.c io_relay_pc.c config.cpp
 SOURCES_PC = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES_PC))
 OBJECTS_PC = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%_pc.o,$(SOURCES_PC))
 
