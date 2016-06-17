@@ -36,9 +36,10 @@ struct Motor
 	float thrust[numMotors];
 };
 
+
 static const uint8_t numSettings = 66;
 static const uint8_t numFlags = 0;
-
+ 
 struct Config
 {
 	bool flag[numFlags];
