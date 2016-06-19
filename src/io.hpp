@@ -21,9 +21,6 @@ void pauseMotorComm();
 
 unsigned long milliseconds();
 
-Config getConfig();
-void setConfig(const Config&);
-
 void init_io();
 
 #endif

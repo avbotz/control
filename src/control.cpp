@@ -3,6 +3,7 @@
 
 #include "pid.hpp"
 #include "io.hpp"
+#include "config.hpp"
 
 // Represents distance traveled during one PID iteration at full power in the
 // respective direction
@@ -19,8 +20,6 @@ int main()
 {
 	init_io();
 
-	// read config
-	Config config = getConfig();
 	// the first (3*NUM_PROPERTIES) values are PID gains
 	float* gains = config.setting;
 	// the next (NUM_PROPERTIES*numMotors) map pid results to desired thrust (linear transformation)
@@ -106,9 +105,6 @@ int main()
 					if (0 <= setting && setting < numSettings)
 					{
 						config.setting[setting] = value;
-						// change persistently stored setting value (ie EEPROM
-						// on avr).
-						setConfig(config);
 
 						// Change current runtime configuration of pid gain
 						if (setting < 3 * NUM_PROPERTIES)

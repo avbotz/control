@@ -17,12 +17,12 @@ CC = gcc
 CFLAGS = -g -c -std=c11 -I$(SOURCEDIR) $(CPPFLAGS)
 CPPFLAGS = -DIEEE754
 LDFLAGS =
-SOURCE_FILES = control.cpp pid.cpp io_cpu.cpp
+SOURCE_FILES = control.cpp pid.cpp io_cpu.cpp config.cpp
 SOURCES = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES))
 OBJECTS = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%.o,$(SOURCES))
 
 EXE_PC = control_pc
-SOURCE_FILES_PC = control.cpp pid.cpp io.cpp ahrs.c crc_xmodem_generic.c io_ahrs_pc.c io_pc.cpp io_depth_pc.cpp io_m5_pc.c m5.c crc32.c io_relay_pc.c
+SOURCE_FILES_PC = control.cpp pid.cpp io.cpp ahrs.c crc_xmodem_generic.c io_ahrs_pc.c io_pc.cpp io_depth_pc.cpp io_m5_pc.c m5.c crc32.c io_relay_pc.c config.cpp
 SOURCES_PC = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES_PC))
 OBJECTS_PC = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%_pc.o,$(SOURCES_PC))
 
@@ -33,7 +33,7 @@ CC_ARD = avr-gcc
 CFLAGS_ARD = -c -std=c11 -g -Os -w -ffunction-sections -fdata-sections -fno-threadsafe-statics -MMD -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR -DIEEE754 -DAVR -DNDEBUG -I$(SOURCEDIR) -I$(ARDLIB_INCLUDEDIR)
 SFLAGS_ARD = -c -g -x assembler-with-cpp -mmcu=atmega2560 -DF_CPU=16000000L -DARDUINO=10605 -DARDUINO_AVR_MEGA2560 -DARDUINO_ARCH_AVR
 LDFLAGS_ARD = -w -Os -Wl,--gc-sections,--relax -mmcu=atmega2560 -Wl,-u,vfprintf -lprintf_flt -lm -Wl,-u,vfscanf -lscanf_flt -lm
-SOURCE_FILES_ARD = control.cpp pid.cpp io.cpp ahrs.c crc_xmodem_generic.c io_ahrs_avr.c io_arduino.cpp io_depth_arduino.cpp io_kill_arduino.cpp io_m5_avr.c m5.c crc32.c io_relay_avr.c io_millis.cpp
+SOURCE_FILES_ARD = control.cpp pid.cpp io.cpp ahrs.c crc_xmodem_generic.c io_ahrs_avr.c io_arduino.cpp io_depth_arduino.cpp io_kill_arduino.cpp io_m5_avr.c m5.c crc32.c io_relay_avr.c io_millis.cpp config.cpp
 SOURCES_ARD = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES_ARD))
 OBJECTS_ARD = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%_ard.o,$(SOURCES_ARD))
 
