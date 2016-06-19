@@ -304,9 +304,16 @@ int io_m5_trans_set(int (*handler)())
 
 void io_m5_trans_stop()
 {
-	// disable USART Data Register Empty Interrupt
-	CC_XXX(UCSR, NUSART, B) &= ~(1U << CC_XXX(UDRIE, NUSART, ));
-	// won't bother setting handler_m5_trans to NULL
+	// Data Register Empty Interrupt and Output Compare Match A Interrupt need
+	// to be disabled atomically because they may cyclically enable each other.
+	ATOMIC_BLOCK(ATOMIC_FORCEON)
+	{
+		// Disable Data Register Empty Interrupt
+		CC_XXX(UCSR, NUSART, B) &= ~(1U << CC_XXX(UDRIE, NUSART, ));
+		// Ensure Output Compare Match Interrupt is disabled, so it doesn't
+		// enable the Data Register Empty Interrupt later.
+		CC_XXX(TIMSK, NTIMER, ) &= ~(1U << CC_XXX(OCIE, NTIMER, A));
+	}
 	return;
 }
 
