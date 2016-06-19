@@ -17,6 +17,10 @@ void activateRelay(enum Relay);
 
 void deactivateRelay(enum Relay);
 
+void pauseMotorComm();
+
+unsigned long milliseconds();
+
 Config getConfig();
 void setConfig(const Config&);
 

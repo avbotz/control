@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <string.h>
 
@@ -9,6 +8,12 @@
 // respective direction
 #define UPDATE_COEFF_X (1.f/600.f)
 #define UPDATE_COEFF_Y (1.f/600.f)
+
+// How long, in milliseconds, to pause communications with the thrusters when
+// starting up and upon being unkilled. This is necessary because the
+// communicating with an m5 thruster while it is booting seems to sometimes
+// cause it to never begin spinning.
+#define PAUSE_TIME 4500UL
 
 int main()
 {
@@ -35,7 +40,10 @@ int main()
 	size_t cbuffer_size = 256;
 	char cbuffer[cbuffer_size];
 
-	bool kill_state = alive();
+	bool kill_state = false;
+
+	bool paused = false;
+	unsigned long pause_until;
 
 	while (true)
 	{
@@ -132,52 +140,78 @@ int main()
 			}
 		}
 
+		bool kill_state_prev = kill_state;
 		// check kill state
 		kill_state = alive();
 
-		// read current variable values and send them to PID
-		state = getState(state);
-		float pidValues[NUM_PROPERTIES] = {0};
-		for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
+		if (paused && pause_until <= milliseconds())
 		{
-			pidValues[i] = process(&controllers[i], desired.property[i] - state.property[i]);
-			// Truncate sum to keep the integral component magnitude from
-			// significantly exceeding 1 to prevent extreme underdamping due to
-			// the sum building up excessively.
-			float i_comp = controllers[i].sum * controllers[i].ki;
-			if (i_comp < -1.f)
-			{
-				controllers[i].sum = -1.f / controllers[i].ki;
-			}
-			else if (i_comp > 1.f)
-			{
-				controllers[i].sum = 1.f / controllers[i].ki;
-			}
+			// PAUSE_TIME has been surpassed. Stop pausing.
+			paused = false;
+		}
+		if (kill_state_prev && !kill_state)
+		{
+			// It's just been killed
+			pauseMotorComm();
+		}
+		if (!kill_state_prev && kill_state)
+		{
+			// It's just been unkilled. Pause to give thrusters time to start
+			// up.
+			paused = true;
+			pause_until = milliseconds() + PAUSE_TIME;
 		}
 
-		// Desired x and y values are relative. Estimate new x and y state
-		// based on their pid values. Assumes velocity is linearly proportional
-		// to the PID value.
-		// PID values are truncated based on assumed range past which thruster
-		// power values would be truncated.
-		desired.property[S_X] -=
-			UPDATE_COEFF_X *
-			((pidValues[S_X] > 1.f) ? 1.f : (pidValues[S_X] < -1.f) ? -1.f : pidValues[S_X]);
-		desired.property[S_Y] -=
-			UPDATE_COEFF_Y *
-			((pidValues[S_Y] > 1.f) ? 1.f : (pidValues[S_Y] < -1.f) ? -1.f : pidValues[S_Y]);
-
-		// determine desired thrust levels
-		Motor motor;
-		for (uint8_t i = 0; i < numMotors; i++)
+		// Only run PID when not killed and thrusters have had time to start
+		// up. This prevents the issue of thrusters sometimes never starting if
+		// they have been communicated with while booting and prevents state
+		// values being included into PID while killed.
+		if (!paused && kill_state)
 		{
-			float thrust = 0;
-			for (uint8_t j = 0; j < NUM_PROPERTIES; j++)
-				thrust += pidValues[j] * thrusterMatrix[i*NUM_PROPERTIES + j];
-			thrust = (thrust > 1) ? 1 : (thrust < -1) ? -1 : thrust;
-			motor.thrust[i] = thrust;
+			// read current variable values and send them to PID
+			state = getState(state);
+			float pidValues[NUM_PROPERTIES] = {0};
+			for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
+			{
+				pidValues[i] = process(&controllers[i], desired.property[i] - state.property[i]);
+				// Truncate sum to keep the integral component magnitude from
+				// significantly exceeding 1 to prevent extreme underdamping due to
+				// the sum building up excessively.
+				float i_comp = controllers[i].sum * controllers[i].ki;
+				if (i_comp < -1.f)
+				{
+					controllers[i].sum = -1.f / controllers[i].ki;
+				}
+				else if (i_comp > 1.f)
+				{
+					controllers[i].sum = 1.f / controllers[i].ki;
+				}
+			}
+
+			// Desired x and y values are relative. Estimate new x and y state
+			// based on their pid values. Assumes velocity is linearly proportional
+			// to the PID value.
+			// PID values are truncated based on assumed range past which thruster
+			// power values would be truncated.
+			desired.property[S_X] -=
+				UPDATE_COEFF_X *
+				((pidValues[S_X] > 1.f) ? 1.f : (pidValues[S_X] < -1.f) ? -1.f : pidValues[S_X]);
+			desired.property[S_Y] -=
+				UPDATE_COEFF_Y *
+				((pidValues[S_Y] > 1.f) ? 1.f : (pidValues[S_Y] < -1.f) ? -1.f : pidValues[S_Y]);
+
+			// determine desired thrust levels
+			Motor motor;
+			for (uint8_t i = 0; i < numMotors; i++)
+			{
+				float thrust = 0;
+				for (uint8_t j = 0; j < NUM_PROPERTIES; j++)
+					thrust += pidValues[j] * thrusterMatrix[i*NUM_PROPERTIES + j];
+				thrust = (thrust > 1) ? 1 : (thrust < -1) ? -1 : thrust;
+				motor.thrust[i] = thrust;
+			}
+			setMotor(motor);
 		}
-		setMotor(motor);
 	}
 
 	return 0;

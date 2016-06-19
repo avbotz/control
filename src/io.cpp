@@ -13,6 +13,7 @@
 #include "io_m5.h"
 #include "m5.h"
 #include "io_relay.h"
+#include "io_millis.hpp"
 #include "macrodef.h"
 
 bool alive()
@@ -92,6 +93,17 @@ void deactivateRelay(enum Relay r)
 	io_relay_off((relay)r);
 }
 
+// It will start again when setMotor is called
+void pauseMotorComm()
+{
+	io_m5_trans_stop();
+}
+
+unsigned long milliseconds()
+{
+	return io_millis();
+}
+
 void init_io()
 {
 	io_cpu_init();
@@ -100,7 +112,7 @@ void init_io()
 	io_m5_init("/dev/ttyUSB1");
 	float powers[NUM_THRUSTERS] = {0.f};
 	setpowers(powers); // zero powers
-	io_m5_trans_set(m5_power_trans); // Start transmitting data asynchcronously
+	io_m5_trans_set(m5_power_trans);
 	io_ahrs_init("/dev/ttyUSB0");
 	// May not be strictly necessary, since the data components can be saved to
 	// non-volatile memory.

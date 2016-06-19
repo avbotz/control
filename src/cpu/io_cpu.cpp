@@ -3,6 +3,9 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+#include <time.h>
+#include <stdlib.h>
+
 bool alive()
 {
 	return true;
@@ -86,6 +89,24 @@ void activateRelay(enum Relay)
 void deactivateRelay(enum Relay)
 {
 	// Do nothing for now
+	return;
+}
+
+unsigned long milliseconds()
+{
+	struct timespec ts;
+	if (clock_gettime(CLOCK_MONOTONIC, &ts))
+	{
+		perror("Failed getting time.");
+		exit(EXIT_FAILURE);
+	}
+	// convert timespec to milliseconds (truncated)
+	return (unsigned long)ts.tv_sec * 1000UL + ts.tv_nsec/1000000UL;
+}
+
+void pauseMotorComm()
+{
+	// Do nothing (we do not communicate with actual thrusters in cpu)
 	return;
 }
 
