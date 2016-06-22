@@ -34,7 +34,6 @@ int main()
 	State desired = {{0}};
 	State state = {{0}};
 
-	// stuff for parsing cpu input
 	size_t c_idx = 0;
 	size_t cbuffer_size = 256;
 	char cbuffer[cbuffer_size];
@@ -136,6 +135,9 @@ int main()
 			}
 		}
 
+		// read current variable values and send them to PID
+		state = getState(state);
+
 		bool kill_state_prev = kill_state;
 		// check kill state
 		kill_state = alive();
@@ -164,8 +166,6 @@ int main()
 		// values being included into PID while killed.
 		if (!paused && kill_state)
 		{
-			// read current variable values and send them to PID
-			state = getState(state);
 			float pidValues[NUM_PROPERTIES] = {0};
 			for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
 			{
