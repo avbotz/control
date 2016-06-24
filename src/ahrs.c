@@ -29,12 +29,12 @@
 
 // 2 Byte Count + 1 Frame Id + 1 ID Count + 3 * (1 Component ID + 4 float32) +
 // 2 CRC
-static uint_fast16_t const DATAGRAM_BYTECOUNT = 23U;
-static unsigned char const FRAME_ID = 0x05U; // kGetDataResp command
-// 1 Heading + 1 Pitch + 1 Roll + 1 HeadingStatus (in any order in payload)
-static uint_fast8_t const ID_COUNT = 4U;
+#define DATAGRAM_BYTECOUNT  23U
+#define FRAME_ID 0x05U // kGetDataResp command
 
-static uint16_t const CRC_POST_ID_COUNT = 0x7982U; // crc of first 4 assumed byte values
+// 1 Heading + 1 Pitch + 1 Roll + 1 HeadingStatus (in any order in payload)
+#define ID_COUNT  4U
+#define CRC_POST_ID_COUNT 0x7982U // crc of first 4 assumed byte values
 
 
 float const ahrs_range[NUM_ATT_AXES][2] = {
