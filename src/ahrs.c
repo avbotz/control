@@ -25,16 +25,13 @@
 
 #define BAUD 38400UL
 
-// TODO: change this to defines
-
-// 2 Byte Count + 1 Frame Id + 1 ID Count + 3 * (1 Component ID + 4 float32) +
-// 2 CRC
-#define DATAGRAM_BYTECOUNT  23U
+// 2 Byte Count + 1 Frame Id + 1 ID Count + 6 * (1 Component ID + 4 float32) +
+// + (1 kHeadingStatus + 1 UInt8) 2 CRC
+#define DATAGRAM_BYTECOUNT  38U
 #define FRAME_ID 0x05U // kGetDataResp command
-
 // 1 Heading + 1 Pitch + 1 Roll + 1 HeadingStatus (in any order in payload)
-#define ID_COUNT  4U
-#define CRC_POST_ID_COUNT 0x7982U // crc of first 4 assumed byte values
+#define ID_COUNT  7U
+#define CRC_POST_ID_COUNT 0xBB74U // crc of first 4 assumed byte values
 
 
 float const ahrs_range[NUM_ATT_AXES][2] = {
@@ -46,6 +43,7 @@ float const ahrs_range[NUM_ATT_AXES][2] = {
 static struct ahrs
 {
 	float att[NUM_ATT_AXES];
+	float accel[NUM_ACCEL_AXES];
 	uint_fast8_t headingstatus;
 } ahrs[3];
 
@@ -53,6 +51,11 @@ static struct ahrs
 float ahrs_att(enum att_axis const dir)
 {
 	return ahrs[io_ahrs_tripbuf_read()].att[dir];
+}
+
+float ahrs_accel(enum accel_axis const dir)
+{
+	return ahrs[io_ahrs_tripbuf_read()].accel[dir];
 }
 
 uint_fast8_t ahrs_headingstatus()
@@ -141,12 +144,23 @@ static bool parse_att(unsigned char const c)
 		static unsigned char write_idx;
 		write_idx = io_ahrs_tripbuf_write();
 
-		static struct cir
+		enum component
 		{
-			unsigned char att           : 3; // Bit positions PITCH, YAW, ROLL
-			unsigned char headingstatus : 1;
+			KHEADING,
+			KPITCH,
+			KROLL,
+			KACCELX,
+			KACCELY,
+			KACCELZ,
+			KHEADINGSTATUS
+		};
+
+		static struct
+		{
+			unsigned char components : ID_COUNT;
 		} comp_is_read;
-		comp_is_read = (struct cir){0, 0};
+		comp_is_read.components = 0;
+
 		static uint_fast8_t i;
 		for (i = ID_COUNT; i--; crc = crc_xmodem_update(crc, c))
 		{
@@ -154,30 +168,50 @@ static bool parse_att(unsigned char const c)
 			return false;
 		case COMPONENT_ID:;
 
-			static uint_fast8_t dir;
+			static float *addr;
+			static enum component dir;
+
 			// data components may arrive in arbitrary order
 			if (c == 5) // kHeading component
 			{
-				dir = YAW;
+				addr = &ahrs[write_idx].att[YAW];
+				dir = KHEADING;
 			}
 			else if (c == 24) // kPitch component
 			{
-				dir = PITCH;
+				addr = &ahrs[write_idx].att[PITCH];
+				dir = KPITCH;
 			}
 			else if (c == 25) // kRoll component
 			{
-				dir = ROLL;
+				addr = &ahrs[write_idx].att[ROLL];
+				dir = KROLL;
+			}
+			else if (c == 21) // kAccelX component
+			{
+				addr = &ahrs[write_idx].accel[SURGE];
+				dir = KACCELX;
+			}
+			else if (c == 22) // kAccelY component
+			{
+				addr = &ahrs[write_idx].accel[SWAY];
+				dir = KACCELY;
+			}
+			else if (c == 23) // kAccelZ component
+			{
+				addr = &ahrs[write_idx].accel[HEAVE];
+				dir = KACCELZ;
 			}
 			else if (c == 79) // kHeadingStatus component
 			{
-				if (comp_is_read.headingstatus)
+				if (comp_is_read.components & (1U << KHEADINGSTATUS))
 				{
 					// repeat component, fail datagram
-					DEBUG("Repead component.");
+					DEBUG("Repeat component.");
 					state = INIT;
 					return false;
 				}
-				comp_is_read.headingstatus = true;
+				comp_is_read.components |= 1U << KHEADINGSTATUS;
 
 				crc = crc_xmodem_update(crc, c);
 
@@ -196,7 +230,7 @@ static bool parse_att(unsigned char const c)
 				return false;
 			}
 
-			if (comp_is_read.att & (1U << dir))
+			if (comp_is_read.components & (1U << dir))
 			{
 				// component is a repeat, fail datagram
 				DEBUG("Repeat component.");
@@ -208,10 +242,13 @@ static bool parse_att(unsigned char const c)
  * format floats. GCC never defines __STD_IEC_559__, since it doesn't conform.
  * avr-gcc uses IEEE754 format little endian floats.
  */
-#ifdef IEEE754
+#ifndef IEEE754
 			/* The native 'float' must be stored in single precision IEEE754
 			 * format.
 			 */
+#error "Platform must use little endian IEEE754 single precision floats. Define IEEE754 if this is the case."
+#endif
+
 #ifndef AVR // avr-libc doesn't seem to support static_assert
 			static_assert(sizeof(float) == 4, "float must not be IEEE754. Try compiling without 'IEEE754' defined.");
 #endif
@@ -227,114 +264,13 @@ static bool parse_att(unsigned char const c)
 					// while native floats are assumed to be little endian.
 					//
 					// type-pun float in order to write raw bytes
-					((unsigned char *)&ahrs[write_idx].att[dir])[j] = c;
+					((unsigned char *)addr)[j] = c;
 				}
 			}
-#else // translate floating point data to native format portably
 
-			// FIXME: This code doesn't parse the floats correctly
-			/* The ahrs transmits a single precision IEEE754 float, big endian
-			 * by default.
-			 *
-			 *       sign  expon       mantissa
-			 * bit:     01   -  89          -         31
-			 * byte:    [  0   ][  1   ][  2   ][  3   ]
-			 */
-			{
-				crc = crc_xmodem_update(crc, c);
-				state = ANGLE_BYTE0;
-				return false;
-		case ANGLE_BYTE0:;
-
-				static bool sign; // 1 bit sign
-				sign = c >> 7;
-
-				static uint8_t expon; // 8 bit expon
-				expon = 0;
-				expon |= (uint8_t)c << 1;
-
-				crc = crc_xmodem_update(crc, c);
-				state = ANGLE_BYTE1;
-				return false;
-		case ANGLE_BYTE1:;
-
-				expon |= (uint8_t)c >> 7;
-				if (expon == 0xFFU)
-				{
-					DEBUG("Infinity or NaN received.");
-					// float must be +\- infinity or NaN, fail datagram
-					state = INIT;
-					return false;
-				}
-
-				static uint_fast32_t mantissa; // 23 bit mantissa
-				mantissa = 0;
-				// mask c to avoid writing a 1 to bit 24
-				mantissa |= ((uint_fast32_t)c & 0x7FU) << 16;
-
-				crc = crc_xmodem_update(crc, c);
-				state = ANGLE_BYTE2;
-				return false;
-		case ANGLE_BYTE2:;
-
-				mantissa |= (uint_fast32_t)c << 8;
-
-				crc = crc_xmodem_update(crc, c);
-				state = ANGLE_BYTE3;
-				return false;
-		case ANGLE_BYTE3:;
-
-				mantissa |= c;
-				// All the float data has been received
-				if (expon == 0x00U)
-				{
-					if (mantissa != 0)
-					{
-						DEBUG("Subnormal number received.");
-						// subnormal number, fail datagram
-						state = INIT;
-						return false;
-					}
-					// float is +/- 0
-					ahrs[write_idx].att[dir] = 0.f;
-				}
-				else
-				{
-					// float is a normalized value
-					ahrs[write_idx].att[dir] = mantissa;
-					// The significand is 1.mantissa, so the exponent needs to
-					// be decreased by the number of mantissa bits. expon also
-					// has a bias (0 offset) of 127.
-					int power = expon - 23 - 127;
-					ahrs[write_idx].att[dir] *= exp2f(power);
-					if (sign)
-					{
-						ahrs[write_idx].att[dir] *= -1;
-					}
-				}
-			}
-#endif
-			/* TODO: Check and scale angle values
-			 * They come from the ahrs in this range:
-			 * heading: 0.0 - 359.9
-			 * pitch: -90 - 90
-			 * roll: -180 - 180
-
-			// kHeading, kPitch, and kRoll, all give a value in a 4 byte/32
-			// bit format, in degrees, in the range [0, 360).
-			if (ahrs[write_idx].att[dir] < 0.f ||
-					360.f <= ahrs[write_idx].att[dir])
-			{
-				// received attitude value outside of the expected range
-				state = INIT;
-				return false;
-			}
-			ahrs[write_idx].att[dir] \= 360.f; // scale to be from 0.0 - 1.0
-			*/
-
-			comp_is_read.att |= 1U << dir; // valid value has been read for this dir
+			comp_is_read.components |= 1U << dir; // valid value has been read for this dir
 		}
-		if (!~comp_is_read.att || !comp_is_read.headingstatus)
+		if (!~comp_is_read.components)
 		{
 			DEBUG("Not all data components received.");
 			// fail datagram
@@ -355,7 +291,7 @@ static bool parse_att(unsigned char const c)
 
 		// The crc of a value with its crc appended == 0, so the crc is valid
 		// if the crc of the entire datagram == 0.
-		if (crc_xmodem_update(crc, c) == 0x0000)
+		if (crc_xmodem_update(crc, c) == 0x0000U)
 		{
 			io_ahrs_tripbuf_offer();
 			// Datagram and all attitude data is considered valid
@@ -412,20 +348,26 @@ static size_t ahrs_write_raw(void const * const datagram, size_t const n)
 
 int ahrs_set_datacomp()
 {
-	/* Data components must be set at least each time the ahrs is powered. At
-	 * least AFAIK, there isn't a way to set this persistently.
+	/*
+	 * kSave can be issued after setting to make data components are set to
+	 * make them persistent, otherwise they reset to last kSave'd values when
+	 * ahrs is powered off.
 	 *
-	 * Datagram to set data components to:
-	 * kHeading, kPitch, kRoll
 	 * parse_att() allows them to be in any order
 	 */
 	static unsigned char const datagram_set_comp[] = {
-			0x00, 0x0A, // bytecount
+			0x00, 0x0D, // bytecount
 			0x03, // Frame ID: kSetDataComponents
-			0x04, // ID Count
-			// Component IDs: kHeading, kPitch, kRoll, kHeadingStatus respectively
-			5, 24, 25, 79,
-			0xE2, 0xEF}; // crc
+			0x07, // ID Count
+			// Component IDs:
+			5, // kHeading
+			24, // kPitch
+			25, // kRoll
+			21, // kAccelX
+			22, // kAccelY
+			23, // kAccelZ
+			79, // kHeadingStatus
+			0xD5, 0xCE}; // crc
 	if (ahrs_write_raw(datagram_set_comp, sizeof(datagram_set_comp)) !=
 			sizeof(datagram_set_comp))
 	{

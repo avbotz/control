@@ -10,7 +10,10 @@ extern "C" {
 
 enum {COMPONENT_MIN, COMPONENT_MAX};
 
-enum att_axis {YAW, PITCH, ROLL, NUM_ATT_AXES};
+enum att_axis {PITCH, YAW, ROLL, NUM_ATT_AXES};
+
+// Rotational axes must correspond with linear axes
+enum accel_axis {SWAY, HEAVE, SURGE, NUM_ACCEL_AXES};
 
 extern float const ahrs_range[NUM_ATT_AXES][2];
 
@@ -32,6 +35,11 @@ int ahrs_cont_start();
  * returns true.
  */
 float ahrs_att(enum att_axis dir);
+
+/**
+ * returns the accelerometer value in G received from the ahrs for the dir.
+ */
+float ahrs_accel(enum accel_axis dir);
 
 /**
  * returns the kHeadingStatus component from the ahrs associated with the
