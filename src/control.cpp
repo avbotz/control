@@ -4,6 +4,9 @@
 #include "pid.hpp"
 #include "io.hpp"
 #include "config.hpp"
+#include "rotation.h"
+
+#define PI 3.14159f
 
 // Represents distance traveled during one PID iteration at full power in the
 // respective direction
@@ -184,17 +187,37 @@ int main()
 				}
 			}
 
-			// Desired x and y values are relative. Estimate new x and y state
+			// Desired x and y values are absolute. Estimate new x and y state
 			// based on their pid values. Assumes velocity is linearly proportional
 			// to the PID value.
 			// PID values are truncated based on assumed range past which thruster
 			// power values would be truncated.
-			desired.property[S_X] -=
+			state.property[S_X] +=
 				UPDATE_COEFF_X *
 				((pidValues[S_X] > 1.f) ? 1.f : (pidValues[S_X] < -1.f) ? -1.f : pidValues[S_X]);
-			desired.property[S_Y] -=
+			state.property[S_Y] +=
 				UPDATE_COEFF_Y *
 				((pidValues[S_Y] > 1.f) ? 1.f : (pidValues[S_Y] < -1.f) ? -1.f : pidValues[S_Y]);
+
+			// Transform the absolute X, Y, and depth values from pid to
+			// vectors relative to the sub axes.
+			float angles[3];
+			for (uint_fast8_t i = 3; i--;)
+			{
+				angles[i] = 2.f * PI * pidValues[S_X + i];
+			}
+			float matrix[3][3];
+			rotation(angles, matrix);
+			float tmp[3];
+			memcpy(tmp, pidValues + S_X, sizeof(tmp));
+			for (uint_fast8_t i = 3 ; i--;)
+			{
+				pidValues[S_X + i] = 0.f;
+				for (uint_fast8_t j = 3 ; j--;)
+				{
+					pidValues[S_X + i] += tmp[i] * matrix[i][j];
+				}
+			}
 
 			// determine desired thrust levels
 			Motor motor;
