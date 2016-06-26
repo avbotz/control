@@ -23,7 +23,7 @@ bool alive()
 
 // State.property[S_YAW, S_PITCH, S_ROLL] are non-modular angle values with
 // delta physical degrees == delta 1.0 of the value. eg if S_YAW == 0 and there
-// is a rotation of 720 degrees, S_YAW will become 1.5 rather than .5.
+// is a rotation of 720 degrees, S_YAW will become 2 rather than 0.
 State getState(const State &current)
 {
 	ahrs_att_update();
@@ -31,11 +31,9 @@ State getState(const State &current)
 	// order of enum must be S_YAW, S_PITCH, S_ROLL
 	for (uint_fast8_t dir = S_YAW; dir <= S_ROLL; ++dir)
 	{
-		// Scale values to range [-.5, .5]
+		// Scale one rotation from 360 degrees to 1 unit
 		newstate.property[dir] = truncf(newstate.property[dir]) +
-			(ahrs_att((enum att_axis)(dir - S_YAW)) - ahrs_range[dir - S_YAW][COMPONENT_MIN]) /
-			(ahrs_range[dir - S_YAW][COMPONENT_MAX] - ahrs_range[dir - S_YAW][COMPONENT_MIN])
-			- .5f;
+			ahrs_att((enum att_axis)(dir - S_YAW)) / 360.f;
 
 		// Heuristic to allow non-modular angles. If the angle has changed by
 		// more than .5, we assume that is due to angle overflow because it is
