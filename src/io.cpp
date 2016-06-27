@@ -67,6 +67,7 @@ State getState(const State &current)
 	{
 		depth_accel += accels[i] * matrix[2][i];
 	}
+	depth_accel += 9.807f; // subtract gravitational acceleration
 
 	static float velocity = 0.f;
 	float depth_prev = newstate.property[S_DEPTH];
