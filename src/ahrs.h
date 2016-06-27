@@ -10,7 +10,7 @@ extern "C" {
 
 enum {COMPONENT_MIN, COMPONENT_MAX};
 
-enum att_axis {PITCH, YAW, ROLL, NUM_ATT_AXES};
+enum att_axis {YAW, PITCH, ROLL, NUM_ATT_AXES};
 
 // Rotational axes must correspond with linear axes
 enum accel_axis {SWAY, HEAVE, SURGE, NUM_ACCEL_AXES};
