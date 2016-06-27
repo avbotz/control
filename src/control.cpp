@@ -204,7 +204,7 @@ int main()
 			float angles[3];
 			for (uint_fast8_t i = 3; i--;)
 			{
-				angles[i] = 2.f * PI * pidValues[S_X + i];
+				angles[i] = 2.f * PI * state.property[S_YAW + i];
 			}
 			float matrix[3][3];
 			rotation(angles, matrix);
