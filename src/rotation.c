@@ -19,9 +19,9 @@ void rotation(float angles[3], float matrix[3][3])
 	// The transposed rotation matrix for Tait-Bryan Z1-Y2-X3 angles
 	memcpy(matrix, (float [3][3])
 		{
-			{c2*c3, c3*s1*s2 - c1*s3, s1*s3 + c1*c3*s2},
-			{c2*s3, c1*c3 + s1*s2*s3, c1*s2*s3 - c3*s1},
-			{-s2, c2*s1, c1*c2}
+			{c1*c2, c2*s1, -s2},
+			{c1*s2*s3 - c3*s1, c1*c3 + s1*s2*s3, c2*s3},
+			{s1*s3 + c1*c3*s2, c3*s1*s2 - c1*s3, c2*c3}
 		}, 3 * sizeof(matrix[0]));
 
 	return;
