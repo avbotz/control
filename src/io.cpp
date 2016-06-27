@@ -15,6 +15,10 @@
 #include "io_relay.h"
 #include "io_millis.hpp"
 #include "macrodef.h"
+#include "rotation.h"
+
+#define PI 3.14159f
+#define DT (1.f/600.f)
 
 bool alive()
 {
@@ -47,7 +51,30 @@ State getState(const State &current)
 			newstate.property[dir] -= 1.f;
 		}
 	}
-	newstate.property[S_DEPTH] = io_depth();
+
+	float angles[3];
+	for (uint_fast8_t i = 3; i--;)
+	{
+		angles[i] = 2.f * PI * newstate.property[S_YAW + i];
+	}
+    float matrix[3][3];
+    rotation(angles, matrix);
+	// Heave is inverted because ahrs says positive Z acceleration is up
+	float accels[3] = {ahrs_accel(SURGE) * 9.807f, ahrs_accel(SWAY) * 9.807f,
+			-ahrs_accel(HEAVE) * 9.807f};
+	float depth_accel = 0.f;
+	for (uint_fast8_t i = 3; --i;)
+	{
+		depth_accel += accels[i] * matrix[2][i];
+	}
+
+	static float velocity = 0.f;
+	float depth_prev = newstate.property[S_DEPTH];
+	newstate.property[S_DEPTH] = .1f * ((io_depth() - 240.f) / 30.f) +
+		.9f * (newstate.property[S_DEPTH] + DT * velocity + .5f * DT * DT * depth_accel);
+	velocity = .1 * ((newstate.property[S_DEPTH] - depth_prev) / DT) +
+		.9f * (velocity + DT * depth_accel);
+
 	return newstate;
 }
 
