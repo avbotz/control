@@ -23,6 +23,8 @@ int main()
 {
 	init_io();
 
+	float maxthrust = .8f;
+
 	// the first (3*NUM_PROPERTIES) values are PID gains
 	float* gains = config.setting;
 	// the next (NUM_PROPERTIES*numMotors) map pid results to desired thrust (linear transformation)
@@ -94,6 +96,13 @@ int main()
 					state.property[S_ROLL]
 				);
 
+				c_idx = 0;
+				memset(cbuffer, 0, cbuffer_size);
+			}
+
+			// get desired max thrust from cpu
+			if (sscanf(cbuffer, " p %f", &maxthrust) == 1)
+			{
 				c_idx = 0;
 				memset(cbuffer, 0, cbuffer_size);
 			}
@@ -239,7 +248,7 @@ int main()
 				float thrust = 0;
 				for (uint8_t j = 0; j < NUM_PROPERTIES; j++)
 					thrust += pidValues[j] * thrusterMatrix[i*NUM_PROPERTIES + j];
-				thrust = (thrust > 1) ? 1 : (thrust < -1) ? -1 : thrust;
+				thrust = (thrust > maxthrust) ? maxthrust : (thrust < -maxthrust) ? -maxthrust : thrust;
 				motor.thrust[i] = thrust;
 			}
 			setMotor(motor);
