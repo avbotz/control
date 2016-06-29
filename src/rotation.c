@@ -10,7 +10,7 @@
  * are relative to the sub itself, so we calculate the vector representing
  * down, north, or east relative to the sub.
  */
-void rotation(float angles[3], float matrix[3][3])
+void rotation(float const angles[3], float matrix[3][3])
 {
 	float s1 = sinf(angles[0]), c1 = cosf(angles[0]);
 	float s2 = sinf(angles[1]), c2 = cosf(angles[1]);
@@ -27,16 +27,16 @@ void rotation(float angles[3], float matrix[3][3])
 	return;
 }
 
-void rotation_angles(float angles[3], float matrix[3][3])
+void rotation_angles(float const angles[3], float matrix[3][3])
 {
 	float s2 = sinf(angles[1]), c2 = cosf(angles[1]);
 	float s3 = sinf(angles[2]), c3 = cosf(angles[2]);
 
 	memcpy(matrix, (float [3][3])
 		{
-			{c2*c3, s3, 0.f},
+			{c2*c3, -s3, 0.f},
 			{c2*s3, c3, 0.f},
-			{s2, 0.f, 1.f}
+			{-s2, 0.f, 1.f}
 		}, sizeof(matrix[0]) * 3);
 
 	return;

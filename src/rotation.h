@@ -13,9 +13,9 @@ enum axis
 	Z
 };
 
-void rotation(float angles[3], float matrix[3][3]);
+void rotation(float const angles[3], float matrix[3][3]);
 
-void rotation_angles(float angles[3], float matrix[3][3]);
+void rotation_angles(float const angles[3], float matrix[3][3]);
 
 
 #ifdef __cplusplus
