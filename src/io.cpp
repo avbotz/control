@@ -71,10 +71,10 @@ State getState(const State &current)
 
 	static float velocity = 0.f;
 	float depth_prev = newstate.property[S_DEPTH];
-	newstate.property[S_DEPTH] = .1f * ((io_depth() - 240.f) / 30.f) +
-		.9f * (newstate.property[S_DEPTH] + DT * velocity + .5f * DT * DT * depth_accel);
-	velocity = .1 * ((newstate.property[S_DEPTH] - depth_prev) / DT) +
-		.9f * (velocity + DT * depth_accel);
+	newstate.property[S_DEPTH] = .001f * ((io_depth() - 240.f) / 30.f) +
+		.999f * (newstate.property[S_DEPTH] + DT * velocity + .5f * DT * DT * depth_accel);
+	velocity = .001 * ((newstate.property[S_DEPTH] - depth_prev) / DT) +
+		.999f * (velocity + DT * depth_accel);
 
 	return newstate;
 }
