@@ -228,7 +228,7 @@ int main()
 				pidValues[S_YAW + i] = 0.f;
 				for (uint_fast8_t j = 3; j--;)
 				{
-					pidValues[S_X + i] += tmp[i] * matrix[i][j];
+					pidValues[S_YAW + i] += tmp[i] * matrix[i][j];
 				}
 			}
 
