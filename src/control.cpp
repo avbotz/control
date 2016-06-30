@@ -230,7 +230,7 @@ int main()
 
 			// Transform the nautical Yaw, Pitch, and Roll values from pid to
 			// vectors relative to the sub
-			rotation(angles, matrix);
+			rotation_angles(angles, matrix);
 			memcpy(tmp, pidValues + S_YAW, sizeof(tmp));
 			for (uint_fast8_t i = 3; i--;)
 			{
