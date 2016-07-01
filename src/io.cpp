@@ -18,7 +18,8 @@
 #include "rotation.h"
 
 #define PI 3.14159f
-#define DT (1.f/600.f)
+
+static unsigned long timestep;
 
 bool alive()
 {
@@ -69,12 +70,15 @@ State getState(const State &current)
 	}
 	depth_accel += 9.807f; // subtract gravitational acceleration
 
+	unsigned long timeprev = timestep;
+	timestep = milliseconds();
+	float dt = timestep - timeprev;
 	static float velocity = 0.f;
 	float depth_prev = newstate.property[S_DEPTH];
 	newstate.property[S_DEPTH] = .01f * ((io_depth() - 240.f) / 30.f) +
-		.99f * (newstate.property[S_DEPTH] + DT * velocity + .5f * DT * DT * depth_accel);
-	velocity = .01 * ((newstate.property[S_DEPTH] - depth_prev) / DT) +
-		.99f * (velocity + DT * depth_accel);
+		.99f * (newstate.property[S_DEPTH] + dt * velocity + .5f * dt * dt * depth_accel);
+	velocity = .01 * ((newstate.property[S_DEPTH] - depth_prev) / dt) +
+		.99f * (velocity + dt * depth_accel);
 
 	return newstate;
 }
@@ -146,5 +150,6 @@ void init_io()
 	ahrs_cont_start();
 	io_ahrs_recv_start(ahrs_att_recv); // Start receiving data asynchronously
 	io_relay_init();
+	timestep = milliseconds();
 	return;
 }
