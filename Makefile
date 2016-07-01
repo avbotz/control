@@ -114,7 +114,7 @@ $(ARDLIB_BUILDDIR)/%.S.o: $(ARDLIB_SOURCEDIR)/%.S
 flash: control.bin
 	avr-objcopy -O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0 $< $<.eep
 	avr-objcopy -O ihex -R .eeprom $< $<.hex
-	avrdude -v -patmega2560 -cwiring -P/dev/ttyUSB0 -b115200 -D -Uflash:w:$<.hex:i
+	avrdude -v -patmega2560 -cwiring -P/dev/ttyUSB1 -b115200 -D -Uflash:w:$<.hex:i
 
 .PHONY: clean
 
