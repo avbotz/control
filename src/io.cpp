@@ -66,7 +66,7 @@ State getState(const State &current)
 	float depth_accel = 0.f;
 	for (uint_fast8_t i = 3; --i;)
 	{
-		depth_accel += accels[i] * matrix[2][i];
+		depth_accel += accels[i] * matrix[i][2];
 	}
 	depth_accel += 9.807f; // subtract gravitational acceleration
 
