@@ -60,8 +60,9 @@ State getState(const State &current)
 	}
     float matrix[3][3];
     rotation(angles, matrix);
-	// Heave is inverted because ahrs says positive Z acceleration is up
-	float accels[3] = {ahrs_accel(SURGE) * 9.807f, ahrs_accel(SWAY) * 9.807f,
+	// All accelerations are negated because ahrs uses opposite directions as
+	// we do.
+	float accels[3] = {-ahrs_accel(SURGE) * 9.807f, -ahrs_accel(SWAY) * 9.807f,
 			-ahrs_accel(HEAVE) * 9.807f};
 	float depth_accel = 0.f;
 	for (uint_fast8_t i = 3; --i;)

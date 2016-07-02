@@ -38,6 +38,9 @@ float ahrs_att(enum att_axis dir);
 
 /**
  * returns the accelerometer value in G received from the ahrs for the dir.
+ *
+ * The coordinates are left-handed with positive heave up, positive sway left,
+ * and positive surge back.
  */
 float ahrs_accel(enum accel_axis dir);
 
