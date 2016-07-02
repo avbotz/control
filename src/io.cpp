@@ -73,7 +73,7 @@ State getState(const State &current)
 
 	unsigned long timeprev = timestep;
 	timestep = milliseconds();
-	float dt = timestep - timeprev;
+	float dt = (timestep - timeprev) / 1000.f;
 	static float velocity = 0.f;
 	float depth_prev = newstate.property[S_DEPTH];
 	newstate.property[S_DEPTH] = .01f * ((io_depth() - 240.f) / 30.f) +
