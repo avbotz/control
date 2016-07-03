@@ -42,7 +42,8 @@ State getState(const State &current)
 
 		// Heuristic to allow non-modular angles. If the angle has changed by
 		// more than .5, we assume that is due to angle overflow because it is
-		// not likely to rotate that much between calls.
+		// not likely to rotate that much between calls. Note that Pitch from
+		// the ahrs can never overflow anyway because it only varies -90 - 90.
 		if (newstate.property[dir] - current.property[dir] < -.5f)
 		{
 			newstate.property[dir] += 1.f;
