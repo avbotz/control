@@ -6,13 +6,6 @@ extern "C" {
 #endif
 
 
-enum axis
-{
-	X,
-	Y,
-	Z
-};
-
 void rotation(float const angles[3], float matrix[3][3]);
 
 void rotation_angles(float const angles[3], float matrix[3][3]);
