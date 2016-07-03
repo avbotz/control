@@ -54,69 +54,61 @@ int main()
 		int c;
 		while ((c = cgetc()) != EOF)
 		{
-			if (c_idx >= cbuffer_size) c_idx = 0;
+			if (c_idx >= cbuffer_size)
+			{
+				// Buffer filled. Reset.
+				c_idx = 0;
+				memset(cbuffer, 0, cbuffer_size);
+			}
 			cbuffer[c_idx++] = (char)c;
 
-			// used for scanf error checking
-			char space;
-
-			// return kill state
-			if (sscanf(cbuffer, " a%c", &space) == 1)
+			if (c == '\n') // Only parse complete lines
 			{
-				cprintf("%i\n", kill_state ? 1 : 0);
+				// used for scanf error checking
+				char space;
 
-				c_idx = 0;
-				memset(cbuffer, 0, cbuffer_size);
-			}
-
-			// get desired state from cpu
-			float x, y, depth, yaw, pitch, roll;
-			if (sscanf(cbuffer, " s s %f %f %f %f %f %f", &x, &y, &depth, &yaw, &pitch, &roll) == 6)
-			{
-				desired.property[S_X] = x;
-				desired.property[S_Y] = y;
-				desired.property[S_DEPTH] = depth;
-				desired.property[S_YAW] = yaw;
-				desired.property[S_PITCH] = pitch;
-				desired.property[S_ROLL] = roll;
-
-				c_idx = 0;
-				memset(cbuffer, 0, cbuffer_size);
-			}
-
-			// send state to cpu
-			if (sscanf(cbuffer, " c%c", &space) == 1)
-			{
-				cprintf("s %f %f %f %f %f %f\n",
-					state.property[S_X],
-					state.property[S_Y],
-					state.property[S_DEPTH],
-					state.property[S_YAW],
-					state.property[S_PITCH],
-					state.property[S_ROLL]
-				);
-
-				c_idx = 0;
-				memset(cbuffer, 0, cbuffer_size);
-			}
-
-			// get desired max thrust from cpu
-			if (sscanf(cbuffer, " p %f", &maxthrust) == 1)
-			{
-				c_idx = 0;
-				memset(cbuffer, 0, cbuffer_size);
-			}
-
-			// get a desired configuration value from cpu
-			{
+				float x, y, depth, yaw, pitch, roll;
 				unsigned int setting;
 				float value;
-				if (sscanf(cbuffer, " e %u %f", &setting, &value) == 2)
+	
+				// return kill state
+				if (sscanf(cbuffer, " a%c", &space) == 1)
+				{
+					cprintf("%i\n", kill_state ? 1 : 0);
+				}
+				// get desired state from cpu
+				else if (sscanf(cbuffer, " s s %f %f %f %f %f %f", &x, &y, &depth, &yaw, &pitch, &roll) == 6)
+				{
+					desired.property[S_X] = x;
+					desired.property[S_Y] = y;
+					desired.property[S_DEPTH] = depth;
+					desired.property[S_YAW] = yaw;
+					desired.property[S_PITCH] = pitch;
+					desired.property[S_ROLL] = roll;
+				}
+				// send state to cpu
+				else if (sscanf(cbuffer, " c%c", &space) == 1)
+				{
+					cprintf("s %f %f %f %f %f %f\n",
+						state.property[S_X],
+						state.property[S_Y],
+						state.property[S_DEPTH],
+						state.property[S_YAW],
+						state.property[S_PITCH],
+						state.property[S_ROLL]
+					);
+				}
+				// get desired max thrust from cpu
+				else if (sscanf(cbuffer, " p %f", &maxthrust) == 1)
+				{
+				}
+				// get a desired configuration value from cpu
+				else if (sscanf(cbuffer, " e %u %f", &setting, &value) == 2)
 				{
 					if (0 <= setting && setting < numSettings)
 					{
 						config.setting[setting] = value;
-
+	
 						// Change current runtime configuration of pid gain
 						if (setting < 3 * NUM_PROPERTIES)
 						{
@@ -141,6 +133,11 @@ int main()
 							}
 						}
 					}
+					else
+					{
+						// Malformed input. Ignore line.
+					}
+					// Reset buffer for next line.
 					c_idx = 0;
 					memset(cbuffer, 0, cbuffer_size);
 				}
