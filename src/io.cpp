@@ -1,5 +1,5 @@
 /**
- * This file is just glue code between the C interfaces of the ahrs and motor
+ * This file is mostly glue code between the C interfaces of the ahrs and motor
  * code and the cpp interfaces the PID code uses.
  */
 #include <math.h>
@@ -19,7 +19,47 @@
 
 #define PI 3.14159f
 
+#define EARTH_ACCEL 9.807f // TODO: add centrifugal acceleration
+
 static unsigned long timestep;
+
+/**
+ * Sets new depth in state based on past depth and sensor data.
+ */
+void updateDepth(State &state, float const depth_prev)
+{
+	// Acceleration vector is rotated according to sub's orientation
+	float angles[3];
+	for (uint_fast8_t i = 3; i--;)
+	{
+		angles[i] = 2.f * PI * state.property[S_YAW + i];
+	}
+    float matrix[3][3];
+    rotation(angles, matrix);
+	// All accelerations are negated because ahrs uses opposite directions as
+	// we do.
+	float accels[3] = {-ahrs_accel(SURGE) * EARTH_ACCEL,
+		-ahrs_accel(SWAY) * EARTH_ACCEL, -ahrs_accel(HEAVE) * EARTH_ACCEL};
+	float depth_accel = 0.f;
+	for (uint_fast8_t i = 3; --i;)
+	{
+		// Multiplication is transposed to go from sub space to world space
+		depth_accel += accels[i] * matrix[i][2];
+	}
+	depth_accel += EARTH_ACCEL; // subtract gravitational acceleration (+Z is down)
+
+	// Simple weighted average between predicted position and measurement (ie
+	// what happens when too lazy for an actual Kalman filter)
+	unsigned long timeprev = timestep;
+	timestep = milliseconds();
+	float dt = (timestep - timeprev) / 1000.f;
+	static float velocity = 0.f; // initial assumption should matter little
+	float depth = .02f * ((io_depth() - 230.f) / 50.f) +
+		.98f * (depth_prev + dt * velocity + .5f * dt * dt * depth_accel);
+	velocity = .02 * ((depth - depth_prev) / dt) +
+		.98f * (velocity + dt * depth_accel);
+	state.property[S_DEPTH] = depth;
+}
 
 bool alive()
 {
@@ -53,34 +93,7 @@ State getState(const State &current)
 			newstate.property[dir] -= 1.f;
 		}
 	}
-
-	float angles[3];
-	for (uint_fast8_t i = 3; i--;)
-	{
-		angles[i] = 2.f * PI * newstate.property[S_YAW + i];
-	}
-    float matrix[3][3];
-    rotation(angles, matrix);
-	// All accelerations are negated because ahrs uses opposite directions as
-	// we do.
-	float accels[3] = {-ahrs_accel(SURGE) * 9.807f, -ahrs_accel(SWAY) * 9.807f,
-			-ahrs_accel(HEAVE) * 9.807f};
-	float depth_accel = 0.f;
-	for (uint_fast8_t i = 3; --i;)
-	{
-		depth_accel += accels[i] * matrix[i][2];
-	}
-	depth_accel += 9.807f; // subtract gravitational acceleration
-
-	unsigned long timeprev = timestep;
-	timestep = milliseconds();
-	float dt = (timestep - timeprev) / 1000.f;
-	static float velocity = 0.f;
-	float depth_prev = newstate.property[S_DEPTH];
-	newstate.property[S_DEPTH] = .02f * ((io_depth() - 230.f) / 50.f) +
-		.98f * (newstate.property[S_DEPTH] + dt * velocity + .5f * dt * dt * depth_accel);
-	velocity = .02 * ((newstate.property[S_DEPTH] - depth_prev) / dt) +
-		.98f * (velocity + dt * depth_accel);
+	updateDepth(newstate, current.property[S_DEPTH]);
 
 	return newstate;
 }
