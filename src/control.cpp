@@ -137,10 +137,10 @@ int main()
 					{
 						// Malformed input. Ignore line.
 					}
-					// Reset buffer for next line.
-					c_idx = 0;
-					memset(cbuffer, 0, cbuffer_size);
 				}
+				// Reset buffer for next line.
+				c_idx = 0;
+				memset(cbuffer, 0, cbuffer_size);
 			}
 		}
 
