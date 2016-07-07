@@ -9,6 +9,8 @@ void cscanf(const char*, ...);
 void cprintf(const char*, ...);
 int cgetc();
 
+void setLevelRef(uint_fast8_t dir, float offset);
+
 State getState(const State&);
 
 void setMotor(const Motor&);

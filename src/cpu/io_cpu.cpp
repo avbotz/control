@@ -6,6 +6,12 @@
 #include <time.h>
 #include <stdlib.h>
 
+void setLevelRef(uint_fast8_t dir, float offset)
+{
+	// nothing to do
+	return;
+}
+
 bool alive()
 {
 	return true;

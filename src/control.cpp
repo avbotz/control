@@ -70,6 +70,7 @@ int main()
 				float x, y, depth, yaw, pitch, roll;
 				unsigned int setting;
 				float value;
+				unsigned int leveldir;
 	
 				// return kill state
 				if (sscanf(cbuffer, " a%c", &space) == 1)
@@ -101,6 +102,14 @@ int main()
 				// get desired max thrust from cpu
 				else if (sscanf(cbuffer, " p %f", &maxthrust) == 1)
 				{
+				}
+				// get level command
+				else if (sscanf(cbuffer, " l %u", &leveldir) == 1)
+				{
+					float offset = state.property[S_YAW + leveldir];
+					setLevelRef(leveldir, offset);
+					// Let computer know what the offset is
+					cprintf("ll %u %f\n", leveldir, offset);
 				}
 				// get a desired configuration value from cpu
 				else if (sscanf(cbuffer, " e %u %f", &setting, &value) == 2)
