@@ -37,6 +37,7 @@ int main()
 
 	// the desired state
 	State desired = {{0}};
+	State raw_state = {{0}};
 	State state = {{0}};
 
 	size_t c_idx = 0;
@@ -44,6 +45,8 @@ int main()
 	char cbuffer[cbuffer_size];
 
 	bool kill_state = false;
+
+	float initialYaw = 0;
 
 	bool paused = false;
 	unsigned long pause_until;
@@ -145,7 +148,8 @@ int main()
 		}
 
 		// read current variable values and send them to PID
-		state = getState(state);
+		state = raw_state = getState(raw_state);
+		state.property[S_YAW] -= initialYaw;
 
 		bool kill_state_prev = kill_state;
 		// check kill state
@@ -163,6 +167,14 @@ int main()
 		}
 		if (!kill_state_prev && kill_state)
 		{
+			for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
+				controllers[i].sum = 0;
+			initialYaw = raw_state.property[S_YAW];
+			raw_state.property[S_X] = 0;
+			raw_state.property[S_Y] = 0;
+			state.property[S_X] = 0;
+			state.property[S_Y] = 0;
+
 			// It's just been unkilled. Pause to give thrusters time to start
 			// up.
 			paused = true;
