@@ -23,7 +23,8 @@ int main()
 {
 	init_io();
 
-	float maxthrust = .8f;
+	float maxthrust = 1.f;
+	float speed = .1f;
 
 	// the first (3*NUM_PROPERTIES) values are PID gains
 	float* gains = config.setting;
@@ -99,8 +100,14 @@ int main()
 					);
 				}
 				// get desired max thrust from cpu
-				else if (sscanf(cbuffer, " p %f", &maxthrust) == 1)
+				else if (sscanf(cbuffer, " p %f", &value) == 1)
 				{
+					maxthrust = value;
+				}
+				// get desired speed from cpu
+				else if (sscanf(cbuffer, " o %f", &value) == 1)
+				{
+					speed = value;
 				}
 				// get a desired configuration value from cpu
 				else if (sscanf(cbuffer, " e %u %f", &setting, &value) == 2)
@@ -179,6 +186,13 @@ int main()
 			for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
 			{
 				pidValues[i] = process(&controllers[i], desired.property[i] - state.property[i]);
+
+				// truncate x / y / d pid values to limit speed
+				if (i == S_X || i == S_Y)
+					pidValues[i] = (pidValues[i] > speed) ? speed : (pidValues[i] < -speed) ? -speed : pidValues[i];
+				if (i == S_DEPTH) // need at least .2 to dive
+					pidValues[i] = (pidValues[i] > speed + .2) ? speed + .2 : (pidValues[i] < -speed - .2) ? -speed - .2 : pidValues[i];
+
 				// Truncate sum to keep the integral component magnitude from
 				// significantly exceeding 1 to prevent extreme underdamping due to
 				// the sum building up excessively.
