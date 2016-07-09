@@ -23,6 +23,19 @@
 
 static unsigned long timestep;
 
+static float leveloffset[3] = {0.f, 0.f, 0.f};
+
+void setLevelRef(uint_fast8_t dir, float offset)
+{
+	if (dir > 2)
+	{
+		// Out of bounds dir.
+		return;
+	}
+	leveloffset[dir] = offset;
+	return;
+}
+
 /**
  * Sets new depth in state based on past depth and sensor data.
  */
@@ -92,6 +105,8 @@ State getState(const State &current)
 		{
 			newstate.property[dir] -= 1.f;
 		}
+		// Adjust for level offset.
+		newstate.property[dir] -= leveloffset[dir - S_YAW];
 	}
 	updateDepth(newstate, current.property[S_DEPTH]);
 

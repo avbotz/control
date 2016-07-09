@@ -38,6 +38,7 @@ int main()
 
 	// the desired state
 	State desired = {{0}};
+	State raw_state = {{0}};
 	State state = {{0}};
 
 	size_t c_idx = 0;
@@ -45,6 +46,8 @@ int main()
 	char cbuffer[cbuffer_size];
 
 	bool kill_state = false;
+
+	float initialYaw = 0;
 
 	bool paused = false;
 	unsigned long pause_until;
@@ -71,6 +74,7 @@ int main()
 				float x, y, depth, yaw, pitch, roll;
 				unsigned int setting;
 				float value;
+				unsigned int leveldir;
 	
 				// return kill state
 				if (sscanf(cbuffer, " a%c", &space) == 1)
@@ -109,6 +113,14 @@ int main()
 				{
 					speed = value;
 				}
+				// get level command
+				else if (sscanf(cbuffer, " l %u", &leveldir) == 1)
+				{
+					float offset = state.property[S_YAW + leveldir];
+					setLevelRef(leveldir, offset);
+					// Let computer know what the offset is
+					cprintf("ll %u %f\n", leveldir, offset);
+				}
 				// get a desired configuration value from cpu
 				else if (sscanf(cbuffer, " e %u %f", &setting, &value) == 2)
 				{
@@ -144,15 +156,16 @@ int main()
 					{
 						// Malformed input. Ignore line.
 					}
-					// Reset buffer for next line.
-					c_idx = 0;
-					memset(cbuffer, 0, cbuffer_size);
 				}
+				// Reset buffer for next line.
+				c_idx = 0;
+				memset(cbuffer, 0, cbuffer_size);
 			}
 		}
 
 		// read current variable values and send them to PID
-		state = getState(state);
+		state = raw_state = getState(raw_state);
+		state.property[S_YAW] -= initialYaw;
 
 		bool kill_state_prev = kill_state;
 		// check kill state
@@ -170,6 +183,14 @@ int main()
 		}
 		if (!kill_state_prev && kill_state)
 		{
+			for (uint8_t i = 0; i < NUM_PROPERTIES; i++)
+				controllers[i].sum = 0;
+			initialYaw = raw_state.property[S_YAW];
+			raw_state.property[S_X] = 0;
+			raw_state.property[S_Y] = 0;
+			state.property[S_X] = 0;
+			state.property[S_Y] = 0;
+
 			// It's just been unkilled. Pause to give thrusters time to start
 			// up.
 			paused = true;
