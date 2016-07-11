@@ -75,6 +75,7 @@ int main()
 				unsigned int setting;
 				float value;
 				unsigned int leveldir;
+				float offset;
 	
 				// return kill state
 				if (sscanf(cbuffer, " a%c", &space) == 1)
@@ -114,9 +115,9 @@ int main()
 					speed = value;
 				}
 				// get level command
-				else if (sscanf(cbuffer, " l %u", &leveldir) == 1)
+				else if (sscanf(cbuffer, " l %u %f", &leveldir, &offset) == 2)
 				{
-					float offset = state.property[S_YAW + leveldir];
+					offset = state.property[S_YAW + leveldir] - offset;
 					setLevelRef(leveldir, offset);
 					// Let computer know what the offset is
 					cprintf("ll %u %f\n", leveldir, offset);
