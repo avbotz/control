@@ -23,7 +23,7 @@
 
 static unsigned long timestep;
 
-static float leveloffset[3] = {0.f, 0.f, 0.f};
+static float leveloffset[3] = {0.f, -.001694f, .000908f};
 
 void setLevelRef(uint_fast8_t dir, float offset)
 {
