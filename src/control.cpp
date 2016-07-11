@@ -23,8 +23,8 @@ int main()
 {
 	init_io();
 
-	float maxthrust = 1.f;
-	float speed = .1f;
+	float maxthrust = 0.f;
+	float speed = 0.f;
 
 	// the first (3*NUM_PROPERTIES) values are PID gains
 	float* gains = config.setting;
