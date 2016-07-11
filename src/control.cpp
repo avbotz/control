@@ -10,8 +10,8 @@
 
 // Represents distance traveled during one PID iteration at full power in the
 // respective direction
-#define UPDATE_COEFF_X (1.f/600.f)
-#define UPDATE_COEFF_Y (1.f/600.f)
+#define UPDATE_COEFF_X (1.f/150.f)
+#define UPDATE_COEFF_Y (1.f/150.f)
 
 // How long, in milliseconds, to pause communications with the thrusters when
 // starting up and upon being unkilled. This is necessary because the
