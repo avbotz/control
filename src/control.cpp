@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <limits.h>
 
 #include "pid.hpp"
 #include "io.hpp"
@@ -18,6 +19,9 @@
 // communicating with an m5 thruster while it is booting seems to sometimes
 // cause it to never begin spinning.
 #define PAUSE_TIME 4500UL
+
+// Approximately how long, in milliseconds, a relay should remain activated
+#define RELAY_ON_TIME 100UL
 
 int main()
 {
@@ -40,6 +44,12 @@ int main()
 	State desired = {{0}};
 	State raw_state = {{0}};
 	State state = {{0}};
+
+	struct
+	{
+		bool activated;
+		unsigned long on_until;
+	}	relays[NUM_RELAYS] = {{0}};
 
 	size_t c_idx = 0;
 	size_t cbuffer_size = 256;
@@ -158,9 +168,34 @@ int main()
 						// Malformed input. Ignore line.
 					}
 				}
+				else if (sscanf(cbuffer, " r %u", &setting) == 1)
+				{
+					if ( setting < NUM_RELAYS)
+					{
+						activateRelay((Relay)setting);
+						relays[setting].activated = true;
+						relays[setting].on_until = milliseconds() +
+							RELAY_ON_TIME;
+					}
+					else
+					{
+						// Malformed input. Ignore line.
+					}
+				}
 				// Reset buffer for next line.
 				c_idx = 0;
 				memset(cbuffer, 0, cbuffer_size);
+			}
+		}
+
+		// deactivate any activated relays whose time has expired
+		for (size_t i = NUM_RELAYS; i--;)
+		{
+			if (relays[i].activated &&
+					relays[i].on_until - milliseconds() > ULONG_MAX / 2)
+			{
+				deactivateRelay((Relay)i);
+				relays[i].activated = false;
 			}
 		}
 
@@ -174,7 +209,7 @@ int main()
 		// check kill state
 		kill_state = alive();
 
-		if (paused && pause_until <= milliseconds())
+		if (paused && pause_until - milliseconds() > ULONG_MAX / 2)
 		{
 			// PAUSE_TIME has been surpassed. Stop pausing.
 			paused = false;

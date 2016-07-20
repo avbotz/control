@@ -10,7 +10,8 @@ enum Relay
 	R_GRABBER_L,
 	R_GRABBER_R,
 	R_TORPEDO_L,
-	R_TORPEDO_R
+	R_TORPEDO_R,
+	NUM_RELAYS
 };
 
 enum
