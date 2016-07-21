@@ -5,19 +5,19 @@
 #include "dbg.h"
 
 #define PORT_DROPPER B
-#define P_DROPPER 1 // arduino pin #52
+#define P_DROPPER 0 // arduino pin #53
 
 #define PORT_GRABBER_L B
-#define P_GRABBER_L 3 // arduino pin #50
+#define P_GRABBER_L 2 // arduino pin #51
 
 #define PORT_GRABBER_R L
-#define P_GRABBER_R 1 // arduino pin #48
+#define P_GRABBER_R 0 // arduino pin #49
 
 #define PORT_TORPEDO_L L
-#define P_TORPEDO_L 3 // arduino pin #46
+#define P_TORPEDO_L 2 // arduino pin #47
 
 #define PORT_TORPEDO_R L
-#define P_TORPEDO_R 5 // arduino pin #44
+#define P_TORPEDO_R 4 // arduino pin #45
 
 /**
  * Sets pins to output.
