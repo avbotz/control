@@ -170,7 +170,7 @@ int main()
 				}
 				else if (sscanf(cbuffer, " r %u", &setting) == 1)
 				{
-					if ( setting < NUM_RELAYS)
+					if (setting < NUM_RELAYS)
 					{
 						activateRelay((Relay)setting);
 						relays[setting].activated = true;
