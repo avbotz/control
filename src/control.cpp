@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
+#include <math.h>
 
 #include "pid.hpp"
 #include "io.hpp"
@@ -228,6 +229,13 @@ int main()
 			raw_state.property[S_Y] = 0;
 			state.property[S_X] = 0;
 			state.property[S_Y] = 0;
+			// Set pitch and roll to modular angle closest to zero (the idea
+			// being that it can return to zero when unkilled with minimal
+			// turning).
+			state.property[S_ROLL] =
+				fmodf(fmodf(state.property[S_ROLL], 1.f) + 1.5f, 1.f) - .5f;
+			state.property[S_PITCH] =
+				fmodf(fmodf(state.property[S_PITCH], 1.f) + 1.5f, 1.f) - .5f;
 
 			// It's just been unkilled. Pause to give thrusters time to start
 			// up.
