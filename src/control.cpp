@@ -183,6 +183,16 @@ int main()
 						// Malformed input. Ignore line.
 					}
 				}
+				else if (sscanf(cbuffer, " u%c", &space) == 1)
+				{
+					// Set pitch and roll to modular angle closest to zero so
+					// they are conveniently centered around 0.
+						fmodf(fmodf(raw_state.property[S_ROLL], 1.f) + 1.5f,
+								1.f) - .5f;
+					state.property[S_PITCH] =
+						fmodf(fmodf(raw_state.property[S_PITCH], 1.f) + 1.5f, 1.f)
+						- .5f;
+				}
 				// Reset buffer for next line.
 				c_idx = 0;
 				memset(cbuffer, 0, cbuffer_size);
@@ -199,12 +209,6 @@ int main()
 				relays[i].activated = false;
 			}
 		}
-
-		// read current variable values and send them to PID
-		raw_state.property[S_X] = state.property[S_X];
-		raw_state.property[S_Y] = state.property[S_Y];
-		state = raw_state = getState(raw_state);
-		state.property[S_YAW] -= initialYaw;
 
 		bool kill_state_prev = kill_state;
 		// check kill state
@@ -233,15 +237,22 @@ int main()
 			// being that it can return to zero when unkilled with minimal
 			// turning).
 			state.property[S_ROLL] =
-				fmodf(fmodf(state.property[S_ROLL], 1.f) + 1.5f, 1.f) - .5f;
+				fmodf(fmodf(raw_state.property[S_ROLL], 1.f) + 1.5f, 1.f) - .5f;
 			state.property[S_PITCH] =
-				fmodf(fmodf(state.property[S_PITCH], 1.f) + 1.5f, 1.f) - .5f;
+				fmodf(fmodf(raw_state.property[S_PITCH], 1.f) + 1.5f, 1.f)
+				- .5f;
 
 			// It's just been unkilled. Pause to give thrusters time to start
 			// up.
 			paused = true;
 			pause_until = milliseconds() + PAUSE_TIME;
 		}
+
+		// read current variable values and send them to PID
+		raw_state.property[S_X] = state.property[S_X];
+		raw_state.property[S_Y] = state.property[S_Y];
+		state = raw_state = getState(raw_state);
+		state.property[S_YAW] -= initialYaw;
 
 		// Only run PID when not killed and thrusters have had time to start
 		// up. This prevents the issue of thrusters sometimes never starting if
