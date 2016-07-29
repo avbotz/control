@@ -22,7 +22,7 @@
 #define PAUSE_TIME 4500UL
 
 // Approximately how long, in milliseconds, a relay should remain activated
-#define RELAY_ON_TIME 250UL
+#define RELAY_ON_TIME 1000UL
 
 int main()
 {
