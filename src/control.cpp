@@ -200,6 +200,12 @@ int main()
 			}
 		}
 
+		// read current variable values and send them to PID
+		raw_state.property[S_X] = state.property[S_X];
+		raw_state.property[S_Y] = state.property[S_Y];
+		state = raw_state = getState(raw_state);
+		state.property[S_YAW] -= initialYaw;
+
 		// deactivate any activated relays whose time has expired
 		for (size_t i = NUM_RELAYS; i--;)
 		{
@@ -248,12 +254,6 @@ int main()
 			paused = true;
 			pause_until = milliseconds() + PAUSE_TIME;
 		}
-
-		// read current variable values and send them to PID
-		raw_state.property[S_X] = state.property[S_X];
-		raw_state.property[S_Y] = state.property[S_Y];
-		state = raw_state = getState(raw_state);
-		state.property[S_YAW] -= initialYaw;
 
 		// Only run PID when not killed and thrusters have had time to start
 		// up. This prevents the issue of thrusters sometimes never starting if
