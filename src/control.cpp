@@ -187,9 +187,10 @@ int main()
 				{
 					// Set pitch and roll to modular angle closest to zero so
 					// they are conveniently centered around 0.
-						fmodf(fmodf(raw_state.property[S_ROLL], 1.f) + 1.5f,
-								1.f) - .5f;
-					state.property[S_PITCH] =
+					raw_state.property[S_ROLL] =
+						fmodf(fmodf(raw_state.property[S_ROLL], 1.f)
+								+ 1.5f, 1.f) - .5f;
+					raw_state.property[S_PITCH] =
 						fmodf(fmodf(raw_state.property[S_PITCH], 1.f) + 1.5f, 1.f)
 						- .5f;
 				}
@@ -236,9 +237,9 @@ int main()
 			// Set pitch and roll to modular angle closest to zero (the idea
 			// being that it can return to zero when unkilled with minimal
 			// turning).
-			state.property[S_ROLL] =
+			raw_state.property[S_ROLL] =
 				fmodf(fmodf(raw_state.property[S_ROLL], 1.f) + 1.5f, 1.f) - .5f;
-			state.property[S_PITCH] =
+			raw_state.property[S_PITCH] =
 				fmodf(fmodf(raw_state.property[S_PITCH], 1.f) + 1.5f, 1.f)
 				- .5f;
 
