@@ -7,6 +7,7 @@
 #include "io.hpp"
 #include "config.hpp"
 #include "rotation.h"
+#include "ahrs.h"
 
 #define PI 3.14159f
 
@@ -113,6 +114,21 @@ int main()
 						state.property[S_YAW],
 						state.property[S_PITCH],
 						state.property[S_ROLL]
+					);
+				}
+				//send raw accel data to cpu	
+				else if (sscanf(cbuffer, " d%c", &space) == 1)
+				{
+					float accel_data[6];
+					getRawAhrsLog(accel_data);
+					cprintf(" l %f %f %f %f %f %f %f\n", 
+						milliseconds(),
+						accel_data[SWAY],
+						accel_data[HEAVE],
+						accel_data[SURGE],
+						accel_data[YAW],
+						accel_data[PITCH],
+						accel_data[ROLL]
 					);
 				}
 				// get desired max thrust from cpu
