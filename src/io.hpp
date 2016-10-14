@@ -25,4 +25,6 @@ unsigned long milliseconds();
 
 void init_io();
 
+void getRawAhrsLog(float*);
+
 #endif
