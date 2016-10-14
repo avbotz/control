@@ -3,6 +3,7 @@
  * code and the cpp interfaces the PID code uses.
  */
 #include <math.h>
+#include <sstream>
 
 #include "io.hpp"
 #include "io_kill.hpp"
@@ -182,4 +183,21 @@ void init_io()
 	io_relay_init();
 	timestep = milliseconds();
 	return;
+}
+
+/**
+@author Varun
+Log raw accel data to play with. There was some thought about wether it should be a string or return floats. Change it if you choose.
+*/
+
+std::string getRawAhrsLog () {
+	std::stringstream data;				
+	data << "time (ms) " << milliseconds() << " ; ";
+	data << "accel| sway: " << ahrs_accel(SWAY) << 
+			", heave: " << ahrs_accel(HEAVE) <<
+			", surge: " << ahrs_accel(SURGE) << " ; ";
+	data << "att| yaw: " << ahrs_att(YAW) <<
+			", pitch: " << ahrs_att(PITCH) <<
+			", roll: " << ahrs_att(ROLL);
+	return data.str();
 }
