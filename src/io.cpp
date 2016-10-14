@@ -190,14 +190,13 @@ void init_io()
 Log raw accel data to play with. There was some thought about wether it should be a string or return floats. Change it if you choose.
 */
 
-std::string getRawAhrsLog () {
-	std::stringstream data;				
-	data << "time (ms) " << milliseconds() << " ; ";
-	data << "accel| sway: " << ahrs_accel(SWAY) << 
-			", heave: " << ahrs_accel(HEAVE) <<
-			", surge: " << ahrs_accel(SURGE) << " ; ";
-	data << "att| yaw: " << ahrs_att(YAW) <<
-			", pitch: " << ahrs_att(PITCH) <<
-			", roll: " << ahrs_att(ROLL);
-	return data.str();
+void getRawAhrsLog (float* ahrs_data)  
+{
+	
+	ahrs_data[0] = ahrs_accel(SWAY); 
+	ahrs_data[1] = ahrs_accel(HEAVE);
+	ahrs_data[2] = ahrs_accel(SURGE); 
+	ahrs_data[3] = ahrs_att(YAW);
+	ahrs_data[4] = ahrs_att(PITCH);
+	ahrs_data[5] = ahrs_att(ROLL); 
 }
