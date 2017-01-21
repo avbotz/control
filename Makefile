@@ -14,9 +14,9 @@ EXE = control
 CXX = g++
 CXXFLAGS  = -ggdb -c -std=c++11 -I$(SOURCEDIR) $(CPPFLAGS)
 CC = gcc
-CFLAGS = -g -c -std=c11 -I$(SOURCEDIR) $(CPPFLAGS)
+CFLAGS = -g -c -std=c11 -I$(SOURCEDIR) $(CPPFLAGS) -I$(GSL)
 CPPFLAGS = -DIEEE754
-LDFLAGS =
+LDFLAGS = -lgsl -lgslcblas
 SOURCE_FILES = control.cpp pid.cpp io_cpu.cpp config.cpp rotation.c
 SOURCES = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES))
 OBJECTS = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%.o,$(SOURCES))
