@@ -3,11 +3,9 @@
  * code and the cpp interfaces the PID code uses.
  */
 #include <math.h>
-#include <gsl/gsl_matrix.h>
-#include <gsl/gsl_blas.h>
 #include <stdio.h>
-#include <gsl/gsl_linalg.h>
 
+#include "mat.cpp"
 #include "io.hpp"
 #include "io_kill.hpp"
 #include "io_ahrs.h"
@@ -70,7 +68,7 @@ void updateDepth(State &state, float const depth_prev)
 	unsigned long timeprev = timestep;
 	timestep = milliseconds();
 	double dt = (timestep - timeprev) / 1000;
-	static double velocity, accel, sensordepth, sensorvelocity, pzz, pzo, poz, poo = 0; // initial assumption should matter little
+	static double velocity = 0, accel = 0, sensordepth = 0, sensorvelocity = 0, pzz = 0, pzo = 0, poz = 0, poo = 0; // initial assumption should matter little
 	int s;
 	static int i = 0;
 	sensorvelocity = sensorvelocity + depth_accel * dt;
@@ -98,70 +96,54 @@ void updateDepth(State &state, float const depth_prev)
 	               sensorvelocity }; // depth-velocity from the sensors
 	double hk[] = {0.5, 0,
 	               0,   1 }; // mapping of depth-velocity to sensordepth-sensorvelocity
-	double inva[4]; // for inverse
+	double xkk[2] = {0, 0};
+	double Xk[2] = {0, 0};
+	double pkk[4] = {0, 0, 0, 0};
+	double Pk[4] = {0, 0, 0, 0};
+	double Kk[4] = {0, 0, 0, 0};
+	double intermediate[2] = {0, 0};
+	double intermediate2[2] = {0, 0};
+	double intermediate3[4] = {0, 0, 0, 0};
+	double intermediate4[4] = {0, 0, 0, 0};
+	double inverse[4] = {0, 0, 0, 0};
 
-
-	//these just write all the arrays as matrices
-	gsl_matrix_view Fk = gsl_matrix_view_array(fk, 2, 2); //helps crudely update depth-velocity
-	gsl_matrix_view Xk = gsl_matrix_view_array(xk, 2, 1); //depth-velocity
-	gsl_matrix_view Bk = gsl_matrix_view_array(bk, 2, 1); //acceleration
-	gsl_matrix_view Iz = gsl_matrix_view_array(identity1, 1, 1); //1x1 identity matrix
-	gsl_matrix_view Io = gsl_matrix_view_array(identity2, 2, 2); //2x2 identity matrix
-	gsl_matrix_view Qk = gsl_matrix_view_array(qk, 2, 2); //noise from environment (known)
-	gsl_matrix_view Pk = gsl_matrix_view_array(pk, 2, 2); //covariance of depth-velocity
-	gsl_matrix_view Rk = gsl_matrix_view_array(rk, 2, 2); //noise from sensors
-	gsl_matrix_view Zk = gsl_matrix_view_array(zk, 2, 1); //sensor depth-velocity
-	gsl_matrix_view Hk = gsl_matrix_view_array(hk, 2, 2); //mapping between calculated values and sensor readings
-	gsl_matrix_view inv = gsl_matrix_view_array(inva, 2, 2); // for computing inverse of matrix later 
-	gsl_matrix * xkk = gsl_matrix_calloc (2,1);
-	gsl_matrix * qkk = gsl_matrix_calloc (2,2);
-	gsl_matrix * qkkk = gsl_matrix_calloc (2,1);
-	gsl_matrix * rkk = gsl_matrix_calloc (2,2);
-	gsl_matrix * rkkk = gsl_matrix_calloc (2,1);
-	gsl_matrix * pkk = gsl_matrix_calloc (2,2); //all of these are for intermediate steps
-	gsl_matrix * Kk = gsl_matrix_calloc (2,2); //Kalman gain
-	gsl_matrix * Xkk = gsl_matrix_calloc (2,1); //new depth-velocity
-	gsl_matrix * Pkk = gsl_matrix_calloc (2,2); //new covariance
-	gsl_permutation * p = gsl_permutation_alloc (2); //for inverse
-
-	//gsl_blas_dgemm (TransA, TransB, alpha, A, B, beta, C) computes C=alpha*op(A)*op(B)+beta*C where op(A)=A or transpose(A) for TransA = CblasNoTrans or CblasTrans respectively and similarly for TransB. (taken from gsl manual)
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &Fk.matrix, &Xk.matrix, 0.0, xkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &Bk.matrix, &Iz.matrix, 1.0, xkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &Fk.matrix, &Pk.matrix, 0.0, qkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasTrans, 1.0, qkk, &Fk.matrix, 0.0, pkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &Qk.matrix, &Io.matrix, 1.0, pkk); 
+	//Kalman filter calculations
+	MatProd2(fk, xk, intermediate);
+	MatSum2(bk, intermediate, xkk);
+	MatProd(fk, pk, intermediate3);
+	MatTrans(fk);
+	MatProd(intermediate3, fk, intermediate4);
+	MatSum(qk, intermediate4, pkk);
 	//Predict step should include:
 	//xkk=Fk*Xk+Bk
 	//pkk=Fk*Pk*transpose(Fk)+Qk
 
 
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &Hk.matrix, pkk, 0.0, qkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasTrans, 1.0, qkk, &Hk.matrix, 0.0, rkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &Rk.matrix, &Io.matrix, 1.0, rkk);
-	gsl_linalg_LU_decomp (rkk, p, &s);
-	gsl_linalg_LU_invert (rkk, p, &inv.matrix); //these two lines compute the inverse of a matrix (Hk*pkk*transpose(Hk)+Rk in this case)
-	gsl_blas_dgemm (CblasNoTrans, CblasTrans, 1.0, pkk, &Hk.matrix, 0.0, qkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, qkk, &inv.matrix, 0.0, Kk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &Hk.matrix, xkk, 0.0, rkkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, &Zk.matrix, &Iz.matrix, -1.0, rkkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, Kk, rkkk, 0.0, qkkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, xkk, &Iz.matrix, 1.0, qkkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, qkkk, &Iz.matrix, 0.0, Xkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, Kk, &Hk.matrix, 0.0, qkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, qkk, pkk, 0.0, rkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, pkk, &Io.matrix, -1.0, rkk);
-	gsl_blas_dgemm (CblasNoTrans, CblasNoTrans, 1.0, rkk, &Io.matrix, 0.0, Pkk);
+	MatProd(hk, pkk, intermediate3);
+	MatTrans(hk);
+	MatProd(intermediate3, hk, intermediate4);
+	MatSum(intermediate4, rk, inverse);
+	MatInv(inverse);
+	MatProd(pkk, hk, intermediate3);
+	MatProd(intermediate3, inverse, Kk);
+	MatProd2(hk, xkk, intermediate2);
+	MatSub2(zk, intermediate2, intermediate);
+	MatProd(Kk, intermediate, intermediate2);
+	MatSum2(xkk, intermediate2, Xk);
+	MatProd(hk, pkk, intermediate3);
+	MatProd(Kk, intermediate3, intermediate4);
+	MatSub(pkk, intermediate4, Pk);
 	//Update step should include:
 	//Xkk=xkk+Kk(Zk-Hk*xkk)
 	//Pkk=pkk-Kk*Hk*pkk
 	//Kk=Pk*trans(Hk)*(Hk*pkk*trans(Hk)+Rk)^-1
 
-	float depth = gsl_matrix_get (Xkk, 0, 0); //new depth
-	velocity = gsl_matrix_get (Xkk, 1, 0); //new velocity
-	pzz = gsl_matrix_get (Pkk, 0, 0);
-	pzo = gsl_matrix_get (Pkk, 0, 1);
-	poz = gsl_matrix_get (Pkk, 1, 0);
-	poo = gsl_matrix_get (Pkk, 1, 1); //new elements of the matrix Pk
+	float depth = Xk[0]; //new depth
+	velocity = Xk[1]; //new velocity
+	pzz = Pk[0];
+	pzo = Pk[1];
+	poz = Pk[2];
+	poo = Pk[3]; //new elements of the matrix Pk
 	i++;
 /**
 	unsigned long timeprev = timestep;

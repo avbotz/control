@@ -14,10 +14,9 @@ EXE = control
 CXX = g++
 CXXFLAGS  = -ggdb -c -std=c++11 -I$(SOURCEDIR) $(CPPFLAGS)
 CC = gcc
-CFLAGS = -g -c -std=c11 -I$(SOURCEDIR) $(CPPFLAGS) -Ic:/gsl
+CFLAGS = -g -c -std=c11 -I$(SOURCEDIR) $(CPPFLAGS)
 CPPFLAGS = -DIEEE754
-LDFLAGS = -Lc:/gsl
-LIBS = -lgsl -lgslcblas
+LDFLAGS =
 SOURCE_FILES = control.cpp pid.cpp io_cpu.cpp config.cpp rotation.c
 SOURCES = $(patsubst %,$(SOURCEDIR)/%,$(SOURCE_FILES))
 OBJECTS = $(patsubst $(SOURCEDIR)/%,$(BUILDDIR)/%.o,$(SOURCES))
@@ -53,7 +52,7 @@ $(ARDLIB_BUILDDIR):
 	mkdir -p $(ARDLIB_BUILDDIR)
 
 $(EXE): $(OBJECTS)
-	$(CXX) $^ $(LDFLAGS) $(LIBS) -o $@
+	$(CXX) $^ $(LDFLAGS) -o $@
 
 $(BUILDDIR)/%.cpp.o: $(SOURCEDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
@@ -69,7 +68,7 @@ $(BUILDDIR)/%.c.o: $(SOURCEDIR)/cpu/%.c
 
 
 $(EXE_PC): $(OBJECTS_PC)
-	$(CXX) $^ $(LDFLAGS) $(LIBS) -pthread -o $@
+	$(CXX) $^ $(LDFLAGS) -pthread -o $@
 
 $(BUILDDIR)/%.cpp_pc.o: $(SOURCEDIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
