@@ -5,7 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 
-#include "mat.cpp"
+#include "matrix.cpp"
 #include "io.hpp"
 #include "io_kill.hpp"
 #include "io_ahrs.h"
@@ -86,12 +86,12 @@ void updateDepth(State &state, float const depth_prev)
 	                0, 1 }; // multiplied to depth-velocity vector to update depth-velocity
 	double bk[] = {dt*dt*accel*0.5,
 	                dt*accel }; // added to depth-velocity (acceleration)
-	double qk[] = {0.000001016, 0.00001016,
-                   0.00001016,   0.000001016   }; // noise from environment
+	double qk[] = {0.000000001016, 0,
+                   0,   0.000001016   }; // noise from environment
 	double pk[] = {pzz, pzo,
                        poz, poo}; // covariance of depth-velocity
-	double rk[] = {1e7 * (i%2==0 ? 1: -1), 0,
-	               0, 1e7* (i%2==0 ? 1: -1)}; // noise from sensor readings; they may be somewhat inaccurate
+	double rk[] = {1, 0,
+	               0, 1}; // noise from sensor readings; they may be somewhat inaccurate
 	double zk[] = {sensordepth, 
 	               sensorvelocity }; // depth-velocity from the sensors
 	double hk[] = {0.5, 0,
@@ -120,7 +120,6 @@ void updateDepth(State &state, float const depth_prev)
 
 
 	MatProd(hk, pkk, intermediate3);
-	MatTrans(hk);
 	MatProd(intermediate3, hk, intermediate4);
 	MatSum(intermediate4, rk, inverse);
 	MatInv(inverse);
