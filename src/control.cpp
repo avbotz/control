@@ -103,6 +103,11 @@ int main()
 					desired.property[S_PITCH] = pitch;
 					desired.property[S_ROLL] = roll;
 				}
+                else if (sscanf(cbuffer, " n %f %f", &ofx, &ofy) == 2)
+                {
+                    state.property[S_X] = ofx;
+                    state.property[S_Y] = ofy;
+                }
 				// send state to cpu
 				else if (sscanf(cbuffer, " c%c", &space) == 1)
 				{
@@ -291,12 +296,15 @@ int main()
 			// to the PID value.
 			// PID values are truncated based on assumed range past which thruster
 			// power values would be truncated.
+            // (NOT DOING THIS B/C OPTICAL FLOW)
+            /*
 			state.property[S_X] +=
 				UPDATE_COEFF_X *
 				((pidValues[S_X] > 1.f) ? 1.f : (pidValues[S_X] < -1.f) ? -1.f : pidValues[S_X]);
 			state.property[S_Y] +=
 				UPDATE_COEFF_Y *
 				((pidValues[S_Y] > 1.f) ? 1.f : (pidValues[S_Y] < -1.f) ? -1.f : pidValues[S_Y]);
+            */
 
 			// Transform the absolute X, Y, and depth values from pid to
 			// vectors relative to the sub axes.
