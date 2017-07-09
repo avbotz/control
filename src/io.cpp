@@ -90,8 +90,8 @@ void updateDepth(State &state, float const depth_prev)
                    0,   0.000001016   }; // noise from environment
 	double pk[] = {pzz, pzo,
                        poz, poo}; // covariance of depth-velocity
-	double rk[] = {1, 0,
-	               0, 1}; // noise from sensor readings; they may be somewhat inaccurate
+	double rk[] = {10000, 0,
+	               0, 10000}; // noise from sensor readings; they may be somewhat inaccurate
 	double zk[] = {sensordepth, 
 	               sensorvelocity }; // depth-velocity from the sensors
 	double hk[] = {0.5, 0,
