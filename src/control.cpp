@@ -87,6 +87,7 @@ int main()
 				float value;
 				unsigned int leveldir;
 				float offset;
+                float ofx, ofy;
 	
 				// return kill state
 				if (sscanf(cbuffer, " a%c", &space) == 1)
@@ -296,15 +297,12 @@ int main()
 			// to the PID value.
 			// PID values are truncated based on assumed range past which thruster
 			// power values would be truncated.
-            // (NOT DOING THIS B/C OPTICAL FLOW)
-            /*
 			state.property[S_X] +=
 				UPDATE_COEFF_X *
 				((pidValues[S_X] > 1.f) ? 1.f : (pidValues[S_X] < -1.f) ? -1.f : pidValues[S_X]);
 			state.property[S_Y] +=
 				UPDATE_COEFF_Y *
 				((pidValues[S_Y] > 1.f) ? 1.f : (pidValues[S_Y] < -1.f) ? -1.f : pidValues[S_Y]);
-            */
 
 			// Transform the absolute X, Y, and depth values from pid to
 			// vectors relative to the sub axes.
