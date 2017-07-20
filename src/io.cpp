@@ -69,8 +69,6 @@ void updateDepth(State &state, float const depth_prev)
 	timestep = milliseconds();
 	double dt = (timestep - timeprev) / 1000;
 	static double velocity = 0, accel = 0, sensordepth = 0, sensorvelocity = 0, pzz = 0, pzo = 0, poz = 0, poo = 0; // initial assumption should matter little
-	int s;
-	static int i = 0;
 	sensorvelocity = sensorvelocity + depth_accel * dt;
 	sensordepth = sensordepth + sensorvelocity * dt + depth_accel * 0.5 * dt * dt;
 
@@ -84,14 +82,14 @@ void updateDepth(State &state, float const depth_prev)
 	                velocity }; // depth-velocity vector
 	double fk[] = { 1, dt, 
 	                0, 1 }; // multiplied to depth-velocity vector to update depth-velocity
-	double bk[] = {dt*dt*accel*0.5,
-	                dt*accel }; // added to depth-velocity (acceleration)
-	double qk[] = {0.000000001016, 0,
-                   0,   0.000001016   }; // noise from environment
+	double bk[] = {dt * dt * accel * 0.5,
+	                dt * accel }; // added to depth-velocity (acceleration)
+	double qk[] = {0.00000054770684, 0.000001256704,
+      	             0.000001256704,   0.000005078445   }; // noise from environment
 	double pk[] = {pzz, pzo,
                        poz, poo}; // covariance of depth-velocity
-	double rk[] = {10000, 0,
-	               0, 10000}; // noise from sensor readings; they may be somewhat inaccurate
+	double rk[] = {100000, 0,
+	               0, 100000}; // noise from sensor readings; they may be somewhat inaccurate
 	double zk[] = {sensordepth, 
 	               sensorvelocity }; // depth-velocity from the sensors
 	double hk[] = {0.5, 0,
@@ -137,13 +135,13 @@ void updateDepth(State &state, float const depth_prev)
 	//Pkk=pkk-Kk*Hk*pkk
 	//Kk=Pk*trans(Hk)*(Hk*pkk*trans(Hk)+Rk)^-1
 
-	float depth = Xk[0]; //new depth
+	double depth = Xk[0]; //new depth
 	velocity = Xk[1]; //new velocity
+	accel = depth_accel;
 	pzz = Pk[0];
 	pzo = Pk[1];
 	poz = Pk[2];
 	poo = Pk[3]; //new elements of the matrix Pk
-	i++;
 /**
 	unsigned long timeprev = timestep;
 	timestep = milliseconds();
