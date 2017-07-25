@@ -87,6 +87,7 @@ int main()
 				float value;
 				unsigned int leveldir;
 				float offset;
+                float ofx, ofy;
 	
 				// return kill state
 				if (sscanf(cbuffer, " a%c", &space) == 1)
@@ -103,6 +104,11 @@ int main()
 					desired.property[S_PITCH] = pitch;
 					desired.property[S_ROLL] = roll;
 				}
+                else if (sscanf(cbuffer, " n %f %f", &ofx, &ofy) == 2)
+                {
+                    state.property[S_X] = ofx;
+                    state.property[S_Y] = ofy;
+                }
 				// send state to cpu
 				else if (sscanf(cbuffer, " c%c", &space) == 1)
 				{
