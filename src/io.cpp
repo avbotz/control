@@ -67,43 +67,40 @@ void updateDepth(State &state, float const depth_prev)
 
 	unsigned long timeprev = timestep;
 	timestep = milliseconds();
-	double dt = (timestep - timeprev) / 1000;
-	static double velocity = 0, accel = 0, sensordepth = 0, sensorvelocity = 0, pzz = 0, pzo = 0, poz = 0, poo = 0; // initial assumption should matter little
+	double dt = (timestep - timeprev) / 1000.0;
+	static double velocity = 0.0, accel = 0.0, sensorvelocity = 0.0, pzz = 0.0, pzo = 0.0, poz = 0.0, poo = 0.0; // initial assumption should matter little
 	sensorvelocity = sensorvelocity + depth_accel * dt;
-	sensordepth = sensordepth + sensorvelocity * dt + depth_accel * 0.5 * dt * dt;
 
 	/**
-	variable names are cancerous, but I tried to match them with those used in: www.bzarg.com/p/how-a-kalman-filter-works-in-pictures/
+	variable names are bad, but I tried to match them with those used in: www.bzarg.com/p/how-a-kalman-filter-works-in-pictures/
+	Essentially qk and rk are the arrays that I’m not sure of, but they should be relatively small
 	*/
-	double identity1[] = {1};
-	double identity2[] = {1, 0,
-		              0, 1 }; // the two identity matrices
 	double xk[] = { depth_prev, 
 	                velocity }; // depth-velocity vector
-	double fk[] = { 1, dt, 
-	                0, 1 }; // multiplied to depth-velocity vector to update depth-velocity
+	double fk[] = { 1.0, dt, 
+	                0.0, 1.0 }; // multiplied to depth-velocity vector to update depth-velocity
 	double bk[] = {dt * dt * accel * 0.5,
 	                dt * accel }; // added to depth-velocity (acceleration)
-	double qk[] = {0.00000054770684, 0.000001256704,
-      	             0.000001256704,   0.000005078445   }; // noise from environment
+	double qk[] = {0.000054770684, 0.0001256704,
+      	             0.0001256704,   0.0005078445   }; // noise from environment
 	double pk[] = {pzz, pzo,
                        poz, poo}; // covariance of depth-velocity
-	double rk[] = {100000, 0,
-	               0, 100000}; // noise from sensor readings; they may be somewhat inaccurate
-	double zk[] = {sensordepth, 
+	double rk[] = {0.0625, 0.0,
+	               0.0, 0.0625}; // noise from sensor readings
+	double zk[] = {(io_depth() - 230.0) / 50.0, 
 	               sensorvelocity }; // depth-velocity from the sensors
-	double hk[] = {0.5, 0,
-	               0,   1 }; // mapping of depth-velocity to sensordepth-sensorvelocity
-	double xkk[2] = {0, 0};
-	double Xk[2] = {0, 0};
-	double pkk[4] = {0, 0, 0, 0};
-	double Pk[4] = {0, 0, 0, 0};
-	double Kk[4] = {0, 0, 0, 0};
-	double intermediate[2] = {0, 0};
-	double intermediate2[2] = {0, 0};
-	double intermediate3[4] = {0, 0, 0, 0};
-	double intermediate4[4] = {0, 0, 0, 0};
-	double inverse[4] = {0, 0, 0, 0};
+	double hk[] = {1.0, 0.0,
+	               0.0, 1.0 }; // mapping of depth-velocity to sensordepth-sensorvelocity
+	double xkk[2] = {0.0, 0.0};
+	double Xk[2] = {0.0, 0.0};
+	double pkk[4] = {0.0, 0.0, 0.0, 0.0};
+	double Pk[4] = {0.0, 0.0, 0.0, 0.0};
+	double Kk[4] = {0.0, 0.0, 0.0, 0.0};
+	double intermediate[2] = {0.0, 0.0};
+	double intermediate2[2] = {0.0, 0.0};
+	double intermediate3[4] = {0.0, 0.0, 0.0, 0.0};
+	double intermediate4[4] = {0.0, 0.0, 0.0, 0.0};
+	double inverse[4] = {0.0, 0.0, 0.0, 0.0};
 
 	//Kalman filter calculations
 	MatProd2(fk, xk, intermediate);
@@ -116,7 +113,6 @@ void updateDepth(State &state, float const depth_prev)
 	//xkk=Fk*Xk+Bk
 	//pkk=Fk*Pk*transpose(Fk)+Qk
 
-
 	MatProd(hk, pkk, intermediate3);
 	MatProd(intermediate3, hk, intermediate4);
 	MatSum(intermediate4, rk, inverse);
@@ -125,7 +121,7 @@ void updateDepth(State &state, float const depth_prev)
 	MatProd(intermediate3, inverse, Kk);
 	MatProd2(hk, xkk, intermediate2);
 	MatSub2(zk, intermediate2, intermediate);
-	MatProd(Kk, intermediate, intermediate2);
+	MatProd2(Kk, intermediate, intermediate2);
 	MatSum2(xkk, intermediate2, Xk);
 	MatProd(hk, pkk, intermediate3);
 	MatProd(Kk, intermediate3, intermediate4);
@@ -142,16 +138,7 @@ void updateDepth(State &state, float const depth_prev)
 	pzo = Pk[1];
 	poz = Pk[2];
 	poo = Pk[3]; //new elements of the matrix Pk
-/**
-	unsigned long timeprev = timestep;
-	timestep = milliseconds();
-	float dt = (timestep - timeprev) / 1000.f;
-	static float velocity = 0.f; // initial assumption should matter little
-	float depth = .02f * ((io_depth() - 230.f) / 50.f) +
-		.98f * (depth_prev + dt * velocity + .5f * dt * dt * depth_accel);
-	velocity = .02 * ((depth - depth_prev) / dt) +
-		.98f * (velocity + dt * depth_accel);
-*/
+	
 	state.property[S_DEPTH] = depth;
 }
 
