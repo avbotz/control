@@ -1,3 +1,4 @@
 build/
 control
 motor_out
+.DS_Store
