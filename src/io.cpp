@@ -67,8 +67,8 @@ void updateDepth(State &state, float const depth_prev)
 
 	unsigned long timeprev = timestep;
 	timestep = milliseconds();
-	double dt = (timestep - timeprev) / 1000.0;
-	static double velocity = 0.0, accel = 0.0, sensorvelocity = 0.0, pzz = 0.0, pzo = 0.0, poz = 0.0, poo = 0.0; // initial assumption should matter little
+	double dt = (timestep - timeprev) / 1000;
+	static double velocity = 0, accel = 0, sensorvelocity = 0, pzz = 0, pzo = 0, poz = 0, poo = 0; // initial assumption should matter little
 	sensorvelocity = sensorvelocity + depth_accel * dt;
 
 	/**
@@ -77,30 +77,30 @@ void updateDepth(State &state, float const depth_prev)
 	*/
 	double xk[] = { depth_prev, 
 	                velocity }; // depth-velocity vector
-	double fk[] = { 1.0, dt, 
-	                0.0, 1.0 }; // multiplied to depth-velocity vector to update depth-velocity
+	double fk[] = { 1, dt, 
+	                0, 1 }; // multiplied to depth-velocity vector to update depth-velocity
 	double bk[] = {dt * dt * accel * 0.5,
 	                dt * accel }; // added to depth-velocity (acceleration)
-	double qk[] = {0.000054770684, 0.0001256704,
-      	             0.0001256704,   0.0005078445   }; // noise from environment
+	double qk[] = {0.00000054770684, 0.000001256704,
+      	             0.000001256704,   0.000005078445   }; // noise from environment
 	double pk[] = {pzz, pzo,
                        poz, poo}; // covariance of depth-velocity
-	double rk[] = {0.0625, 0.0,
-	               0.0, 0.0625}; // noise from sensor readings
-	double zk[] = {(io_depth() - 230.0) / 50.0, 
+	double rk[] = {0.00000625, 0,
+	               0, 0.00000625}; // noise from sensor readings
+	double zk[] = {(io_depth() - 175) / 50, 
 	               sensorvelocity }; // depth-velocity from the sensors
-	double hk[] = {1.0, 0.0,
-	               0.0, 1.0 }; // mapping of depth-velocity to sensordepth-sensorvelocity
-	double xkk[2] = {0.0, 0.0};
-	double Xk[2] = {0.0, 0.0};
-	double pkk[4] = {0.0, 0.0, 0.0, 0.0};
-	double Pk[4] = {0.0, 0.0, 0.0, 0.0};
-	double Kk[4] = {0.0, 0.0, 0.0, 0.0};
-	double intermediate[2] = {0.0, 0.0};
-	double intermediate2[2] = {0.0, 0.0};
-	double intermediate3[4] = {0.0, 0.0, 0.0, 0.0};
-	double intermediate4[4] = {0.0, 0.0, 0.0, 0.0};
-	double inverse[4] = {0.0, 0.0, 0.0, 0.0};
+	double hk[] = {1, 0,
+	               0, 1 }; // mapping of depth-velocity to sensordepth-sensorvelocity
+	double xkk[2] = {0, 0};
+	double Xk[2] = {0, 0};
+	double pkk[4] = {0, 0, 0, 0};
+	double Pk[4] = {0, 0, 0, 0};
+	double Kk[4] = {0, 0, 0, 0};
+	double intermediate[2] = {0, 0};
+	double intermediate2[2] = {0, 0};
+	double intermediate3[4] = {0, 0, 0, 0};
+	double intermediate4[4] = {0, 0, 0, 0};
+	double inverse[4] = {0, 0, 0, 0};
 
 	//Kalman filter calculations
 	MatProd2(fk, xk, intermediate);
